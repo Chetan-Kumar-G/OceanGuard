@@ -10,6 +10,17 @@ import type {
   TemporalSpillState,
 } from "../api/types";
 import { boundsOf, circlePolygon, flattenCoords } from "../lib/geo";
+import type { LayerVisibility } from "./LayerToggles";
+
+const SPILL_LAYER_IDS = ["spill-fill", "spill-outline"];
+const SOURCE_LAYER_IDS = ["hypothesis-circle-fill", "hypothesis-circle-outline", "hypothesis-point"];
+const VESSEL_LAYER_IDS = ["vessels-point"];
+const FORECAST_LAYER_IDS = [
+  "forecast-envelope-fill",
+  "forecast-envelope-outline",
+  "forecast-predicted-fill",
+  "forecast-predicted-outline",
+];
 
 const SOURCES = {
   spill: "spill-polygons",
@@ -37,6 +48,7 @@ interface MapViewProps {
   forecastRun: ForecastRun | null;
   selectedMmsi: string | null;
   onSelectVessel: (mmsi: string | null) => void;
+  layers: LayerVisibility;
 }
 
 export default function MapView({
@@ -48,6 +60,7 @@ export default function MapView({
   forecastRun,
   selectedMmsi,
   onSelectVessel,
+  layers,
 }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -206,11 +219,26 @@ export default function MapView({
     firstFitDoneRef.current = null;
   }, [center]);
 
+  function applyLayerVisibility() {
+    const map = mapRef.current;
+    if (!map || !loadedRef.current) return;
+    const apply = (ids: string[], visible: boolean) => {
+      for (const id of ids) {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
+      }
+    };
+    apply(SPILL_LAYER_IDS, layers.spill);
+    apply(SOURCE_LAYER_IDS, layers.source);
+    apply(VESSEL_LAYER_IDS, layers.vessels);
+    apply(FORECAST_LAYER_IDS, layers.forecast);
+  }
+
   function forceUpdate() {
     updateSpill();
     updateForecast();
     updateHypotheses();
     updateVessels();
+    applyLayerVisibility();
   }
 
   function updateSpill() {
@@ -325,6 +353,8 @@ export default function MapView({
   useEffect(updateForecast, [forecastRun]);
   useEffect(updateHypotheses, [hypotheses]);
   useEffect(updateVessels, [candidates, ranking, selectedMmsi]);
+
+  useEffect(applyLayerVisibility, [layers]);
 
   return <div ref={containerRef} className="map-container" />;
 }

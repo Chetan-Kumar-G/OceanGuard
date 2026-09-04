@@ -10,6 +10,7 @@ import {
   runForecast,
   runHindcast,
   runReplay,
+  type ForecastRequestBody,
 } from "../api/client";
 import type {
   CandidateVessel,
@@ -185,5 +186,28 @@ export function useEventPipeline() {
     }
   }, [setStage]);
 
-  return { state, load };
+  /** Re-run just the F8 stage with caller-chosen parameters ("run forecaster"). */
+  const rerunForecast = useCallback(
+    async (params: ForecastRequestBody, options: { replay?: boolean } = {}) => {
+      if (!state.eventId) return;
+      const eventId = state.eventId;
+      setStage("f8", "loading");
+      try {
+        const forecastRes = await runForecast(eventId, params);
+        const impactRes = await getImpact(eventId).catch(() => ({ data: [] }));
+        let replayData = state.replay;
+        if (options.replay) {
+          const replayRes = await runReplay(eventId, params).catch(() => ({ data: [] }));
+          replayData = replayRes.data;
+        }
+        setState((s) => (s.eventId !== eventId ? s : { ...s, forecast: forecastRes.data, impact: impactRes.data, replay: replayData }));
+        setStage("f8", "done");
+      } catch (err) {
+        setStage("f8", "error", messageFor(err));
+      }
+    },
+    [state.eventId, state.replay, setStage],
+  );
+
+  return { state, load, rerunForecast };
 }

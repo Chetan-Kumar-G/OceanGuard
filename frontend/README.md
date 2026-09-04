@@ -7,6 +7,28 @@ backward-hindcast source-hypothesis region, candidate vessels, and forward
 forecast/impact overlays, plus a side panel with the F6 candidate ranking,
 F5 cross-source evidence, and the F7 forensic evidence chain.
 
+Also includes:
+- **Investigator login** (`/login`, `/register`) — the whole dashboard is
+  behind auth (`backend/auth/`); the first account ever registered becomes
+  `admin`, everyone after is `investigator`. Admins can promote/demote via
+  `PATCH /admin/users/{id}/role`.
+- **Public false-positive appeals** (`/appeal`) — no account needed. Submissions
+  land in the investigator-only review queue at `/review` (`backend/appeals/`),
+  which appends a status history rather than overwriting it.
+- **Satellite quicklooks** — F1 scene thumbnails per observation, served from
+  `/media/quicklook/...` (a static mount over the dataset directory).
+- **Layer toggles** — show/hide the spill polygons, source region, candidate
+  vessels, and forecast overlay independently on the map.
+- **Run forecaster** — the F8 forecast panel lets you pick horizons, ensemble
+  size, particle count, and seed, then re-run the forward ensemble (with or
+  without replay validation) on demand, instead of only the pipeline's
+  auto-run defaults.
+
+> Note: the frontend route is `/review`, not `/appeals` — `/appeals` is
+> proxied straight to the backend's `GET /appeals` API (see `vite.config.ts`),
+> so a full-page navigation to that path would hit the JSON API instead of
+> the React app.
+
 ## Run it
 
 ```bash

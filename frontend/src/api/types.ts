@@ -235,6 +235,48 @@ export interface ImpactAssessment {
   impact_area_candidates: string[];
 }
 
+// ---------------------------------------------------------------- Auth
+export type Role = "investigator" | "admin";
+
+export interface UserOut {
+  id: string;
+  email: string;
+  display_name: string;
+  role: Role;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+  user: UserOut;
+}
+
+// ---------------------------------------------------------------- Appeals
+export type AppealSubject = "detection" | "source_hypothesis" | "candidate_vessel" | "other";
+export type AppealStatus = "open" | "reviewing" | "upheld" | "dismissed";
+
+export interface AppealHistoryEntry {
+  status: AppealStatus;
+  notes?: string | null;
+  reviewer_display_name?: string | null;
+  timestamp: string;
+}
+
+export interface AppealOut {
+  id: string;
+  event_id: string;
+  subject: AppealSubject;
+  mmsi?: string | null;
+  contact_name: string;
+  contact_email: string;
+  statement: string;
+  status: AppealStatus;
+  submitted_at: string;
+  history: AppealHistoryEntry[];
+}
+
 export interface ForecastEvaluation {
   event_id: string;
   forecast_id: string;

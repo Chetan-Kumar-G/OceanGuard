@@ -1,4 +1,6 @@
+import { useState } from "react";
 import type { ForecastEvaluation, ForecastRun, ImpactAssessment } from "../api/types";
+import type { ForecastRequestBody } from "../api/client";
 
 interface Props {
   forecast: ForecastRun[];
@@ -6,18 +8,72 @@ interface Props {
   replay: ForecastEvaluation[];
   selectedHorizon: number | null;
   onSelectHorizon: (h: number | null) => void;
+  onRun: (params: ForecastRequestBody, options: { replay?: boolean }) => void;
+  busy: boolean;
 }
 
-export default function ForecastPanel({ forecast, impact, replay, selectedHorizon, onSelectHorizon }: Props) {
-  const horizons = [...new Set(forecast.map((r) => r.forecast_horizon_hours))].sort((a, b) => a - b);
+const HORIZON_CHOICES = [6, 12, 24, 48, 72, 96];
+
+export default function ForecastPanel({ forecast, impact, replay, selectedHorizon, onSelectHorizon, onRun, busy }: Props) {
+  const [horizons, setHorizons] = useState<number[]>([12, 24, 48, 72]);
+  const [nEnsemble, setNEnsemble] = useState(16);
+  const [nParticles, setNParticles] = useState(200);
+  const [seed, setSeed] = useState(42);
+
+  const activeHorizons = [...new Set(forecast.map((r) => r.forecast_horizon_hours))].sort((a, b) => a - b);
   const impactByHorizon = new Map(impact.map((i) => [i.forecast_horizon_hours, i]));
   const selected = forecast.find((r) => r.forecast_horizon_hours === selectedHorizon);
   const selectedImpact = selectedHorizon != null ? impactByHorizon.get(selectedHorizon) : undefined;
 
+  function toggleHorizon(h: number) {
+    setHorizons((hs) => (hs.includes(h) ? hs.filter((x) => x !== h) : [...hs, h].sort((a, b) => a - b)));
+  }
+
+  function run(withReplay: boolean) {
+    onRun({ horizons_h: horizons, n_ensemble: nEnsemble, n_particles: nParticles, base_seed: seed }, { replay: withReplay });
+  }
+
   return (
     <section className="panel-card">
       <h3>F8 forward forecast</h3>
-      {horizons.length === 0 ? (
+
+      <div className="forecaster-controls">
+        <div className="forecaster-row">
+          <span className="muted small">Horizons (h)</span>
+          <div className="chip-row">
+            {HORIZON_CHOICES.map((h) => (
+              <label key={h} className={`chip ${horizons.includes(h) ? "chip-on" : ""}`}>
+                <input type="checkbox" checked={horizons.includes(h)} onChange={() => toggleHorizon(h)} />
+                {h}
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="forecaster-row">
+          <label className="inline-field">
+            Ensemble
+            <input type="number" min={4} max={80} value={nEnsemble} onChange={(e) => setNEnsemble(Number(e.target.value))} />
+          </label>
+          <label className="inline-field">
+            Particles
+            <input type="number" min={20} max={2000} step={20} value={nParticles} onChange={(e) => setNParticles(Number(e.target.value))} />
+          </label>
+          <label className="inline-field">
+            Seed
+            <input type="number" value={seed} onChange={(e) => setSeed(Number(e.target.value))} />
+          </label>
+        </div>
+        <div className="horizon-buttons">
+          <button onClick={() => run(false)} disabled={busy || horizons.length === 0}>
+            {busy ? "Running…" : "Run forecaster"}
+          </button>
+          <button onClick={() => run(true)} disabled={busy || horizons.length === 0}>
+            Run + replay validation
+          </button>
+        </div>
+      </div>
+
+      {activeHorizons.length === 0 ? (
         <p className="muted">Not yet computed.</p>
       ) : (
         <>
@@ -25,7 +81,7 @@ export default function ForecastPanel({ forecast, impact, replay, selectedHorizo
             <button className={selectedHorizon == null ? "active" : ""} onClick={() => onSelectHorizon(null)}>
               off
             </button>
-            {horizons.map((h) => (
+            {activeHorizons.map((h) => (
               <button key={h} className={h === selectedHorizon ? "active" : ""} onClick={() => onSelectHorizon(h)}>
                 +{h}h
               </button>

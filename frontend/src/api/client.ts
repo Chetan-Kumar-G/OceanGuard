@@ -1,4 +1,7 @@
 import type {
+  AppealOut,
+  AppealSubject,
+  AppealStatus,
   ApiResponse,
   CandidateVessel,
   EvidenceRelation,
@@ -11,7 +14,14 @@ import type {
   RankingResult,
   SourceHypothesisWindow,
   TemporalProgressionResult,
+  TokenResponse,
+  UserOut,
 } from "./types";
+
+let _authToken: string | null = null;
+export function setAuthToken(token: string | null) {
+  _authToken = token;
+}
 
 /**
  * Every request is relative (``/f5/...``) so Vite's dev proxy (see
@@ -32,10 +42,9 @@ class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...init,
-  });
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (_authToken) headers.Authorization = `Bearer ${_authToken}`;
+  const res = await fetch(`${BASE}${path}`, { headers: { ...headers, ...(init?.headers as Record<string, string>) }, ...init });
   const body = await res.json().catch(() => null);
   if (!res.ok) throw new ApiError(res.status, path, body);
   return body as T;
@@ -43,6 +52,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 const post = <T>(path: string, body?: unknown) =>
   request<T>(path, { method: "POST", body: body ? JSON.stringify(body) : undefined });
+const patch = <T>(path: string, body?: unknown) =>
+  request<T>(path, { method: "PATCH", body: body ? JSON.stringify(body) : undefined });
 const get = <T>(path: string) => request<T>(path);
 
 export { ApiError };
@@ -92,3 +103,52 @@ export const runReplay = (eventId: string, body: ForecastRequestBody = {}) =>
 
 // ---------------------------------------------------------------- health
 export const getHealth = () => get<{ status: string; features: string[] }>(`/health`);
+
+// ---------------------------------------------------------------- auth
+export const register = (email: string, password: string, displayName: string) =>
+  post<TokenResponse>(`/auth/register`, { email, password, display_name: displayName });
+
+export async function login(email: string, password: string): Promise<TokenResponse> {
+  const form = new URLSearchParams();
+  form.set("username", email);
+  form.set("password", password);
+  const res = await fetch(`${BASE}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: form.toString(),
+  });
+  const body = await res.json().catch(() => null);
+  if (!res.ok) throw new ApiError(res.status, "/auth/login", body);
+  return body as TokenResponse;
+}
+
+export const getMe = () => get<UserOut>(`/auth/me`);
+
+export const requestPasswordReset = (email: string) =>
+  post<{ message: string; dev_reset_token: string | null }>(`/auth/password-reset/request`, { email });
+
+export const confirmPasswordReset = (token: string, newPassword: string) =>
+  post<UserOut>(`/auth/password-reset/confirm`, { token, new_password: newPassword });
+
+// ---------------------------------------------------------------- appeals
+export interface AppealSubmissionBody {
+  event_id: string;
+  subject: AppealSubject;
+  mmsi?: string;
+  contact_name: string;
+  contact_email: string;
+  statement: string;
+}
+
+export const submitAppeal = (body: AppealSubmissionBody) => post<AppealOut>(`/appeals`, body);
+
+export const listAppeals = (filters: { event_id?: string; status?: AppealStatus } = {}) => {
+  const qs = new URLSearchParams(filters as Record<string, string>).toString();
+  return get<AppealOut[]>(`/appeals${qs ? `?${qs}` : ""}`);
+};
+
+export const reviewAppeal = (appealId: string, status: AppealStatus, notes?: string) =>
+  patch<AppealOut>(`/appeals/${appealId}/review`, { status, notes });
+
+// ---------------------------------------------------------------- media
+export const quicklookUrl = (sceneId: string) => `${BASE}/media/quicklook/${sceneId}.png`;

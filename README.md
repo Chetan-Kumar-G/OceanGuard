@@ -68,18 +68,36 @@ uvicorn backend.app:app --reload
 ```
 
 Every feature is mounted on one app — `GET /health` lists them, `GET /docs` gives the
-full interactive OpenAPI surface. Example calls against the bundled synthetic dataset
-(event `EVT0002`):
+full interactive OpenAPI surface. Every F1-F8 route requires a signed-in investigator
+(`POST /appeals` is the one deliberately public route — see below); register, then use
+the token for everything else:
 
 ```bash
-curl -X POST localhost:8000/api/v1/f3/hindcast/EVT0002
-curl -X POST localhost:8000/api/v1/f4/reconstruct-ais/EVT0002
-curl -X POST localhost:8000/f5/evaluate-consistency/EVT0002
-curl -X POST localhost:8000/f6/rank/EVT0002
-curl      localhost:8000/events/EVT0002/graph
-curl -X POST localhost:8000/api/v1/f8/forecast/EVT0002
-curl -X POST localhost:8000/api/v1/f8/replay/EVT0002
+# register (the first account on a fresh deployment becomes admin)
+curl -X POST localhost:8000/auth/register -H 'Content-Type: application/json' \
+  -d '{"email":"you@example.org","password":"supersecret1","display_name":"You"}'
+# -> {"access_token": "...", ...}; export it:
+TOKEN=<paste access_token here>
+
+curl -X POST localhost:8000/api/v1/f3/hindcast/EVT0002 -H "Authorization: Bearer $TOKEN"
+curl -X POST localhost:8000/api/v1/f4/reconstruct-ais/EVT0002 -H "Authorization: Bearer $TOKEN"
+curl -X POST localhost:8000/f5/evaluate-consistency/EVT0002 -H "Authorization: Bearer $TOKEN"
+curl -X POST localhost:8000/f6/rank/EVT0002 -H "Authorization: Bearer $TOKEN"
+curl      localhost:8000/events/EVT0002/graph -H "Authorization: Bearer $TOKEN"
+curl -X POST localhost:8000/api/v1/f8/forecast/EVT0002 -H "Authorization: Bearer $TOKEN"
+curl -X POST localhost:8000/api/v1/f8/replay/EVT0002 -H "Authorization: Bearer $TOKEN"
 ```
+
+## 🔐 Auth & false-positive appeals
+
+- **Auth** (`backend/auth/`): register/login (JWT), `GET /auth/me`, password reset
+  (`POST /auth/password-reset/request` returns the token directly in dev — there's no
+  email service configured — and a real deployment would email it instead), and
+  admin user management (`GET /admin/users`, `PATCH /admin/users/{id}/role`).
+- **Appeals** (`backend/appeals/`): `POST /appeals` is public — anyone with an event ID
+  (e.g. a contacted vessel operator) can dispute a detection, source region, or
+  candidate-vessel flag without an account. `GET /appeals` / `PATCH /appeals/{id}/review`
+  are investigator-only and append a status history rather than overwriting it.
 
 ## 🗺️ Investigator dashboard
 
@@ -87,8 +105,10 @@ curl -X POST localhost:8000/api/v1/f8/replay/EVT0002
 [`frontend/`](frontend/) — React + TypeScript + MapLibre GL, driving the same
 F2 → F8 pipeline as the demonstration scenario in Features.md §15: spill
 polygon history, source-hypothesis region, candidate vessels, F6 ranking, F5
-evidence, F7 evidence chain, and F8 forecast/impact/replay, all against the
-live backend.
+evidence, F7 evidence chain, and F8 forecast/impact/replay (with layer toggles
+and manual forecaster controls), plus F1 satellite quicklooks — all against
+the live, authenticated backend. See [frontend/README.md](frontend/README.md)
+for the login and appeals flow.
 
 ```bash
 # backend (terminal 1)

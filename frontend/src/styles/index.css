@@ -413,6 +413,306 @@ body {
   color: #fff;
 }
 
+/* ---------------------------------------------------------------- auth */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 20%, #10131a 0%, #05060a 100%);
+  padding: 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-card.appeal-card {
+  max-width: 520px;
+}
+
+.auth-card h1 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.auth-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.auth-card input,
+.auth-card select,
+.auth-card textarea {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.auth-card textarea {
+  resize: vertical;
+}
+
+.auth-card button[type="submit"],
+.auth-card button.primary {
+  margin-top: 6px;
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-card button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+.auth-loading {
+  padding: 40px;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------------- nav / user badge */
+.top-nav {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.top-nav a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.user-badge .link-button {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+
+/* ---------------------------------------------------------------- map overlay */
+.map-overlay-controls {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(20, 23, 31, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  z-index: 5;
+}
+
+.layer-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.layer-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------- satellite thumbnails */
+.thumb-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.thumb {
+  flex: 0 0 auto;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.thumb img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #000;
+}
+
+.thumb-label {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------------- forecaster controls */
+.forecaster-controls {
+  background: var(--panel-2);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.forecaster-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.chip-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2px 8px;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.chip-on {
+  border-color: var(--accent);
+  color: var(--text);
+  background: rgba(79, 141, 255, 0.12);
+}
+
+.inline-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.inline-field input {
+  width: 60px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 3px 5px;
+  font-size: 12px;
+}
+
+/* ---------------------------------------------------------------- appeals review */
+.appeals-review {
+  padding: 12px 20px;
+  overflow-y: auto;
+}
+
+.appeals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.appeal-row-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  flex-wrap: wrap;
+}
+
+.appeal-row-body {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.appeal-review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.appeal-review-form textarea {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.flag-status-open {
+  background: rgba(79, 141, 255, 0.15);
+  color: var(--accent);
+}
+
+.flag-status-reviewing {
+  background: rgba(255, 179, 71, 0.15);
+  color: var(--warn);
+}
+
+.flag-status-upheld {
+  background: rgba(255, 92, 92, 0.15);
+  color: var(--danger);
+}
+
+.flag-status-dismissed {
+  background: rgba(138, 144, 160, 0.15);
+  color: var(--muted);
+}
+
 .maplibregl-popup-content {
   background: var(--panel);
   color: var(--text);

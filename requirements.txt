@@ -7,6 +7,10 @@ uvicorn[standard]>=0.30.0
 pydantic>=2.7.0
 pydantic-settings>=2.0.0
 
+# --- auth ---
+pyjwt>=2.8.0
+python-multipart>=0.0.9  # OAuth2PasswordRequestForm (login form parsing)
+
 # --- data / numerics ---
 numpy>=1.24
 pandas>=2.0
