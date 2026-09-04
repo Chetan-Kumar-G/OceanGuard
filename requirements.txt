@@ -1,0 +1,34 @@
+# OilTrace AI — merged requirements for the unified backend (F1–F8).
+# Install: pip install -r requirements.txt
+
+# --- API / web ---
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.7.0
+pydantic-settings>=2.0.0
+
+# --- data / numerics ---
+numpy>=1.24
+pandas>=2.0
+pyyaml>=6.0
+
+# --- geospatial ---
+shapely>=2.0
+rasterio>=1.3
+geopandas>=0.14
+
+# --- graph (F7) ---
+networkx>=3.0
+sqlalchemy>=2.0
+# psycopg2-binary>=2.9   # optional: only needed for a live PostgreSQL/PostGIS F5/F7 backend
+
+# --- vision (F1) ---
+torch>=2.0
+opencv-python>=4.8
+pillow>=9.0
+
+# --- dev / test ---
+pytest>=8.0
+pytest-asyncio>=0.23
+pytest-cov>=5.0
+httpx>=0.27

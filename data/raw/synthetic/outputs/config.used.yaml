@@ -1,0 +1,137 @@
+# OilTrace synthetic data generator - master configuration.
+# Every number that shapes the output lives here. Change the seed to get a new,
+# fully reproducible world; change n_events to scale it.
+
+seed: 20260902
+sim_start_utc: "2026-01-05T00:00:00Z"
+
+n_events: 12
+
+aoi:
+  ref_lat: 35.0            # lat/lon of the local (0,0) origin
+  ref_lon: 18.0
+  width_km: 400.0
+  height_km: 400.0
+
+time:
+  sim_days: 16
+  step_minutes: 30         # integration step for the truth drift model
+
+environment:
+  wind:
+    mean_speed: 6.0        # m/s, target RMS wind speed
+    n_modes: 5
+    corr_length_km: 160.0
+    corr_time_h: 20.0
+    gust_std: 2.0
+  current:
+    mean_speed: 0.45       # m/s, target RMS surface current
+    n_modes: 4
+    corr_length_km: 130.0
+    corr_time_h: 40.0
+  wind_drift_factor: 0.032  # slick advects at current + factor * wind
+  diffusion_m2s: 9.0        # horizontal eddy diffusivity for the random walk
+
+spill:
+  n_particles: 4000
+  release_hours: 3.0
+  initial_radius_km: 0.5
+  slick_buffer_km: 0.45     # buffer radius when turning particles into a polygon
+  polygon_particles: 900    # subsample used for polygon construction
+
+satellite:
+  revisit_hours: 18.0
+  revisit_jitter_h: 5.0
+  pre_release_scene_prob: 0.5
+  observation_span_days: 7.0
+  scene_size_px: 512
+  pixel_spacing_m: 40.0
+  sensor: "Sentinel-1"
+  product_type: "GRD"
+  acquisition_mode: "IW"
+  polarizations: ["VV", "VH"]
+  land_scene_prob: 0.15
+  lookalikes_per_scene: [0, 3]
+  ships_per_scene: [0, 5]
+  detection:
+    base_pod: 0.88          # probability an existing slick is detected at all
+    low_wind_speed: 3.0     # below this, contrast collapses -> harder detection
+    high_wind_speed: 12.0   # above this, slick is scattered -> harder detection
+    filament_drop_prob: 0.30
+    lookalike_merge_prob: 0.15   # false-positive: detection swallows a look-alike
+    boundary_iou_noise: 0.09
+    min_confidence: 0.35
+
+ais:
+  n_vessels: 44
+  report_interval_min: [2, 10]
+  dropout_rate: 0.05
+  culprit_dark_gap_h: [1.5, 6.0]   # the true source vessel goes dark around t0
+  decoy_dark_gap_prob: 0.15
+  interp_interval_min: 5
+  candidate_decoys: 4              # non-culprit candidates carried into D4/D6
+
+hindcast:
+  n_ensembles: 6
+  backtrack_hours: 72.0
+  n_particles: 250
+  record_every_h: 6.0
+  perturb:
+    wind_drift_factor_std: 0.010
+    diffusion_rel_std: 0.40
+    forcing_noise_ms: 0.6           # gaussian noise added to forcing each step
+  origin_window_half_h: 6.0         # +/- around true release used to score density
+  source_match_radius_km: 15.0
+
+evidence:
+  # A relationship is SUPPORTS only if every residual is under its support bound;
+  # CONTRADICTS if any residual exceeds its contradict bound; UNKNOWN otherwise.
+  support:
+    spatial_residual_km: 8.0
+    temporal_residual_h: 6.0
+    drift_residual_km: 10.0
+    ais_gap_ratio: 0.25
+  contradict:
+    spatial_residual_km: 40.0
+    temporal_residual_h: 24.0
+    drift_residual_km: 45.0
+    ais_gap_ratio: 0.70
+
+ranking:
+  weights:
+    source_probability: 0.22
+    spatial_compatibility: 0.18
+    temporal_compatibility: 0.15
+    drift_compatibility: 0.15
+    ais_completeness: 0.05
+    behavioural_score: 0.17
+    sensor_confidence: 0.08
+  contradiction_penalty: 0.12   # subtracted per CONTRADICTS relation for the candidate
+  compat_scale_km: 12.0         # exp(-d / scale) mapping for spatial/drift compat
+  insufficient_evidence:
+    min_final_score: 0.35
+    min_evidence_items: 3
+    min_margin: 0.05            # gap between rank 1 and rank 2
+  confidence_bands:
+    high: 0.65
+    medium: 0.45
+
+replay:
+  t0_observation_index: 2       # k-th observation of an event becomes T0
+  min_observations: 4
+  horizons_h: [12, 24, 48, 72]
+  n_ensemble: 40
+  forcing_noise_growth_ms_per_h: 0.03   # forecast forcing error grows with lead time
+  match_tolerance_h: 12.0               # how close a real obs must be to score a horizon
+
+geography:
+  coast_edge: "south"           # south => coastline at y = 0
+  sensitive_zones:
+    - {name: "MPA_North_Bank", x_km: 120.0, y_km: 45.0, radius_km: 25.0}
+    - {name: "MPA_East_Shoal", x_km: 300.0, y_km: 90.0, radius_km: 30.0}
+
+output:
+  dir: "outputs"
+  raster_format: "npy"          # npy | none
+  write_quicklook: true
+  train_val_test: [0.6, 0.2, 0.2]   # event-level split fractions

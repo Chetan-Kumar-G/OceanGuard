@@ -1,0 +1,51 @@
+# OilTrace — F5 Cross-Source Consistency: single source of truth for the
+# rule/constraint engine thresholds.
+#
+# The MVP verdict rule (see /backend/f5_consistency/README.md for the full ADR):
+#
+#   SUPPORTS     iff every *constrained* residual is <= its support bound
+#   CONTRADICTS  iff any  *constrained* residual is >= its contradict bound
+#   UNKNOWN      otherwise (grey band, or a constrained residual was not evaluable)
+#
+# Constrained residuals are ONLY: spatial_residual_km, temporal_residual_h.
+# drift_residual_km and ais_gap_ratio are reported for context and used only for
+# documented, one-directional downgrades (SUPPORTS -> UNKNOWN); they never turn a
+# verdict into CONTRADICTS on their own and never override a CONTRADICTS.
+#
+# Starting-point values are copied verbatim from the reference synthetic dataset
+# (`config.yaml -> evidence.support / evidence.contradict`). Re-tune here after
+# validation — never hardcode a threshold in the Python module.
+
+evidence:
+  support:
+    spatial_residual_km: 8.0
+    temporal_residual_h: 6.0
+    drift_residual_km: 10.0      # context bound (informational / downgrade only)
+    ais_gap_ratio: 0.25          # context bound (informational / downgrade only)
+  contradict:
+    spatial_residual_km: 40.0
+    temporal_residual_h: 24.0
+    drift_residual_km: 45.0      # context bound (informational only)
+    ais_gap_ratio: 0.70          # context bound (informational only)
+
+  # Relationship-specific overrides, all one-directional (only ever downgrade a
+  # SUPPORTS to UNKNOWN — a CONTRADICTS is never softened, per integration rule 9).
+  overrides:
+    # F1_DETECTION <-> F2_STATE: if the mean F1 confidence backing the seed
+    # detection is below this, the pair is UNKNOWN regardless of residuals.
+    min_sensor_confidence: 0.5
+    # F3_SOURCE_HYPOTHESIS <-> F4_VESSEL_TRACK: if the residuals would SUPPORT but
+    # the vessel's AIS gap ratio in the origin window exceeds the support bound
+    # (and it did not go dark directly over the source), downgrade to UNKNOWN.
+    f3f4_high_gap_downgrade: true
+
+  # Parameters for the F2_DRIFT <-> F3_FORCING consistency check. Without a live
+  # F3 forcing field (standalone / mock mode) the check asks a weaker but still
+  # meaningful question: "is the observed slick displacement within the envelope
+  # any plausible current + wind-drift could have produced?" The constrained
+  # spatial residual is the portion of the displacement that a plausible forcing
+  # cannot explain (0 for a genuine oil slick, large for a vessel-like track).
+  drift_model:
+    default_wind_drift_factor: 0.032   # slick advects at current + factor * wind
+    max_current_speed_ms: 1.125        # upper plausible surface current
+    max_wind_speed_ms: 15.0            # upper plausible wind speed

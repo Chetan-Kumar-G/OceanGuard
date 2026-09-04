@@ -30,16 +30,86 @@ Given a satellite SAR image showing a possible oil spill, detect and localize it
 
 ## 🏗️ Pipeline
 
-| Stage | What it does | Status |
-|---|---|---|
-| 1. Detect | Segment oil spill from Sentinel-1 SAR imagery | ✅ Baseline defined |
-| 2. Characterize | Estimate spill geometry (area, shape), age where feasible | ✅ Baseline defined |
-| 3. Hindcast | Trace slick backward to likely origin using wind/current data | ⚠️ **Gap — no drift model sourced yet** |
-| 4. Forecast | Predict future slick movement | ⚠️ **Gap — depends on stage 3** |
-| 5. AIS Reconstruction | Rebuild historical vessel traffic near origin window | ✅ Baseline defined |
-| 6. Filter | Remove spatially/temporally irrelevant vessel traffic | ✅ Baseline defined |
-| 7. Attribute | Rank candidate vessels with explainable evidence | ✅ Baseline defined |
-| 8. Explain | Investigation dashboard tying it all together | 🔜 Planned |
+The system implements all eight features of the
+[OilTrace AI Technical Research Specification](OilTrace_Technical_Research_Specification_CleanLayout.pdf)
+behind **one unified FastAPI app** (`backend/app.py`):
+
+| # | Feature | Module | Status |
+|---|---|---|---|
+| F1 | AI Oil-Spill Detection & Look-Alike Analysis | `backend/f1_detection/` | ✅ Implemented |
+| F2 | Multi-Temporal Spill Reconstruction & Characterization | `backend/f2_temporal/` | ✅ Implemented |
+| F3 | Environmental Drift & Backward Hindcasting → Source Hypotheses | `backend/f3_hindcast/` | ✅ Implemented |
+| F4 | Historical AIS Vessel Reconstruction & Correlation | `backend/f4_ais/` | ✅ Implemented |
+| F5 | Cross-Source Consistency & Evidence Conflict Detection | `backend/f5_consistency/` | ✅ Implemented |
+| F6 | Evidence Fusion & Dynamic Hypothesis Ranking | `backend/f6_ranking/` | ✅ Implemented |
+| F7 | Forensic Investigation Graph & Explainable Evidence Chain | `backend/f7_graph/` | ✅ Implemented |
+| F8 | Forward Forecasting, Impact Assessment & Historical Replay | `backend/f8_forecast/` | ✅ Implemented |
+
+F3 and F8 share one Lagrangian particle-tracking engine (`shared/physics/lagrangian.py`) run
+**backward** (hindcast) and **forward** (forecast) respectively.
+
+> **F8 honesty note:** F8 drives its forward ensemble with F3's synthetic forcing
+> *abstraction*, not the internal field used by the `oiltrace_synth` dataset generator
+> (a separately-seeded implementation of the same kind of field). It reproduces the
+> D8 data **contract** exactly and behaves correctly (spread grows with lead time,
+> confidence decays, the envelope is scenario-based, replay never sees the future) —
+> it does not bit-reproduce the reference `D8_forecast_runs.csv` values, for the same
+> reason F7's graph-count check against `D7_graph_*.csv` uses a tolerance band rather
+> than an exact match.
+
+---
+
+## ▶️ Running the unified API
+
+```bash
+pip install -r requirements.txt
+uvicorn backend.app:app --reload
+# then open http://127.0.0.1:8000/docs
+```
+
+Every feature is mounted on one app — `GET /health` lists them, `GET /docs` gives the
+full interactive OpenAPI surface. Example calls against the bundled synthetic dataset
+(event `EVT0002`):
+
+```bash
+curl -X POST localhost:8000/api/v1/f3/hindcast/EVT0002
+curl -X POST localhost:8000/api/v1/f4/reconstruct-ais/EVT0002
+curl -X POST localhost:8000/f5/evaluate-consistency/EVT0002
+curl -X POST localhost:8000/f6/rank/EVT0002
+curl      localhost:8000/events/EVT0002/graph
+curl -X POST localhost:8000/api/v1/f8/forecast/EVT0002
+curl -X POST localhost:8000/api/v1/f8/replay/EVT0002
+```
+
+## 🗺️ Investigator dashboard
+
+**F22 — Investigator Geospatial Dashboard** (Features.md) is implemented at
+[`frontend/`](frontend/) — React + TypeScript + MapLibre GL, driving the same
+F2 → F8 pipeline as the demonstration scenario in Features.md §15: spill
+polygon history, source-hypothesis region, candidate vessels, F6 ranking, F5
+evidence, F7 evidence chain, and F8 forecast/impact/replay, all against the
+live backend.
+
+```bash
+# backend (terminal 1)
+python -m uvicorn backend.app:app --reload
+
+# dashboard (terminal 2)
+cd frontend && npm install && npm run dev
+```
+
+Open the printed `localhost:5173` URL and pick an event. See
+[frontend/README.md](frontend/README.md) for details.
+
+## ✅ Running the tests
+
+```bash
+python -m pytest
+```
+
+One suite covers all eight features end-to-end (`tests/unit/f1` … `tests/unit/f8`,
+plus `tests/integration/`), running against the single synthetic dataset in
+`data/raw/synthetic/outputs/`.
 
 ---
 
@@ -115,11 +185,18 @@ Vessel results are presented as **evidence-based association / attribution score
 
 ## 🚧 Open Issues / Roadmap
 
-- [ ] Source a wind/current drift model for hindcasting & forecasting (INCOIS or equivalent)
+- [x] Backward hindcast (F3) and forward forecast (F8) drift models — implemented on a
+      shared synthetic Lagrangian engine; swap in ERA5/Copernicus/INCOIS forcing behind
+      the same `ForcingProvider` interface for production
+- [ ] Source a real wind/current dataset for hindcasting & forecasting (INCOIS or equivalent)
 - [ ] Confirm Indian-waters AIS access path (NAIS institutional access vs. AISHub substitute)
-- [ ] Validate end-to-end attribution against confirmed historical spill incidents (ground truth currently unavailable)
-- [ ] Handle AIS blackout / spoofing (dark vessels) — not addressed in current baseline
+- [x] Validate end-to-end attribution against synthetic historical events (`tests/integration/`);
+      confirmed historical-incident ground truth is still unavailable
+- [ ] Handle AIS blackout / spoofing (dark vessels) — F4 records AIS gaps as evidence but does
+      not yet model spoofing
 - [ ] Define system-level (not just per-component) latency budget
+- [ ] Reconcile F1/F2's `backend/shared/` support package (detection/temporal schemas,
+      mask polygonize, ID minting) into the cross-feature `shared/` used by F3–F8
 
 ---
 

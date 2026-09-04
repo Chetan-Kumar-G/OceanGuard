@@ -1,0 +1,25 @@
+# F6 Evidence Ranking Weights
+# Source: Data set Synthethic/config.yaml -> ranking.*
+# All values loaded at runtime - never hardcode per-developer.
+
+weights:
+  source_probability: 0.22
+  spatial_compatibility: 0.18
+  temporal_compatibility: 0.15
+  drift_compatibility: 0.15
+  ais_completeness: 0.05
+  behavioural_score: 0.17
+  sensor_confidence: 0.08
+
+contradiction_penalty: 0.12      # subtracted per CONTRADICTS relation for the candidate
+compat_scale_km: 12.0            # exp(-d / scale) mapping for spatial/drift compat
+
+insufficient_evidence:
+  min_final_score: 0.35          # top score below this -> insufficient
+  min_evidence_items: 3          # fewer items -> insufficient
+  min_margin: 0.05               # gap to rank-2 below this -> insufficient
+
+confidence_bands:
+  high: 0.65
+  medium: 0.45
+  # below medium -> "low"

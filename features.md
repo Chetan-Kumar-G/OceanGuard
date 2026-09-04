@@ -1,1974 +1,1991 @@
-# OilTrace AI — Final Feature Specification
+# AI-Assisted Satellite Oil-Spill Detection & Investigation System
 
-> **SIH Problem Statement:** 26143  
-> **Project:** AI-Assisted Satellite Oil-Spill Detection, Reconstruction & Vessel Investigation
-
----
-
-## 1. Project Overview
-
-OilTrace AI is an AI-assisted maritime investigation and decision-support system that combines satellite imagery, multi-temporal observations, environmental data, drift modelling, and historical AIS data to:
-
-1. Detect probable oil spills.
-2. Reduce false detections caused by SAR look-alikes.
-3. Reconstruct observed spill evolution.
-4. Generate physically plausible source hypotheses.
-5. Correlate source hypotheses with historical vessel activity.
-6. Detect conflicts between different evidence sources.
-7. Rank competing hypotheses using transparent evidence fusion.
-8. Provide an explainable investigation trail for human investigators.
-
-### Critical Limitation
-
-OilTrace AI does **not**:
-
-- Automatically prove the responsible vessel.
-- Determine legal responsibility.
-- Guarantee the exact physical source of a spill.
-- Automatically prove AIS spoofing.
-- Replace maritime investigators or authorities.
-
-The system produces **evidence-based investigation hypotheses**, not accusations.
+> **SIH Project — Final Feature Specification**
+>
+> **Core positioning:** A satellite-first AI-assisted system for detecting oil spills, reconstructing their evolution, estimating probable source regions, correlating vessel activity, and presenting evidence-backed candidate vessels for human investigation.
+>
+> **Important:** The system is **not an automated enforcement or vessel-accusation system**. It provides investigation support, evidence, candidate ranking, and uncertainty information.
 
 ---
 
-# 2. Final Feature Set
+# 1. System Overview
 
-| # | Feature | Classification | Importance | SIH MVP |
-|---|---|---|---|---|
-| 1 | AI Oil-Spill Detection & Look-Alike Analysis | Baseline + Improvement | Critical | Yes |
-| 2 | Multi-Temporal Spill Reconstruction & Characterization | Improvement | Critical | Yes |
-| 3 | Environmental Drift & Backward Hindcasting → Source Hypotheses | Existing + Improvement | Critical | Yes |
-| 4 | Historical AIS Vessel Reconstruction & Correlation | Baseline / Existing | Critical | Yes |
-| 5 | Cross-Source Consistency & Evidence Conflict Detection | Proposed Differentiator | High | Yes |
-| 6 | Evidence Fusion & Dynamic Hypothesis Ranking | Proposed System-Level Differentiator | Critical | Yes |
-| 7 | Forensic Investigation Graph & Explainable Evidence Chain | Proposed Workflow Differentiator | High | Yes |
-| 8 | Forward Forecasting, Impact Assessment & Historical Replay | Existing + Improvement + Validation | High | Optional / Validation |
+The proposed system follows this investigation pipeline:
 
-### Classification Definitions
+```text
+Satellite Imagery
+       ↓
+Oil-Spill Detection
+       ↓
+Look-Alike Rejection
+       ↓
+Spill Segmentation & Quantification
+       ↓
+Temporal Change Analysis
+       ↓
+Spill Evolution Reconstruction
+       ↓
+Wind + Ocean Current Data
+       ↓
+Drift / Backtracking
+       ↓
+Probable Source Region
+       ↓
+AIS Vessel Correlation
+       ↓
+Vessel Behaviour & Consistency Analysis
+       ↓
+Multi-Source Evidence Fusion
+       ↓
+Candidate Vessel Ranking
+       ↓
+Uncertainty + Evidence Report
+       ↓
+Human Investigator
+```
 
-| Classification | Meaning |
-|---|---|
-| **Baseline** | Expected functionality required for a credible oil-spill investigation system. |
-| **Existing** | Established technology or research adopted by the system. |
-| **Improvement** | Existing technology applied in a more useful or robust workflow. |
-| **Proposed Differentiator** | Proposed system-level contribution; not a claim that the underlying algorithm is newly invented. |
-| **Validation** | Capability primarily used to test and demonstrate system reliability. |
+The key idea is:
 
----
-
-# 3. Overall System Workflow
-
-Satellite Observation  
-↓  
-Probable Oil-Spill Detection  
-↓  
-Look-Alike Analysis  
-↓  
-Spill Characterization  
-↓  
-Multi-Temporal Reconstruction  
-↓  
-Environmental Conditions  
-↓  
-Drift / Backward Hindcasting  
-↓  
-Plausible Source Hypotheses  
-↓  
-Historical AIS Reconstruction  
-↓  
-Vessel Correlation  
-↓  
-Cross-Source Consistency  
-↓  
-Evidence Fusion  
-↓  
-Hypothesis / Candidate Ranking  
-↓  
-Explainable Investigation  
-↓  
-Human Investigator  
-↓  
-Investigate / Reject / Insufficient Evidence
+> **Detect → Observe change → Reconstruct movement → Estimate source → Correlate vessels → Fuse evidence → Quantify uncertainty → Let an investigator decide.**
 
 ---
 
-# 4. Feature 1 — AI Oil-Spill Detection & Look-Alike Analysis
+# 2. Feature Classification
 
-**Classification:** Baseline + Improvement  
-**Importance:** Critical  
-**SIH MVP:** Yes  
-**Feasibility:** High  
-**Technical Depth:** High  
-**Algorithmic Novelty:** Low
+| Classification        | Meaning                                                                                                                                       |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **BASELINE**          | A fundamental capability expected in a credible oil-spill detection/investigation system.                                                     |
+| **EXISTING**          | A technology or research capability that already exists and is being adopted.                                                                 |
+| **IMPROVEMENT**       | An existing capability used in a more useful, robust, or integrated manner.                                                                   |
+| **PROPOSED / UNIQUE** | Our proposed system-level differentiation. The underlying algorithms may already exist; the novelty is primarily in the integration/workflow. |
+| **FUTURE**            | Useful advanced functionality that is outside the core SIH MVP.                                                                               |
 
-## Purpose
+> **Important distinction:** “Unique” does **not** mean we invented a new neural network or a new physics model. Our strongest novelty claim is at the **system/workflow and evidence-fusion level**.
 
-Detect probable oil-spill regions from satellite imagery while reducing false detections caused by oil-spill look-alikes.
+---
 
-## Workflow
+# 3. Final Feature List
 
-Satellite Image  
-↓  
-SAR Preprocessing  
-↓  
-Segmentation Model  
-↓  
-Probable Spill Mask  
-↓  
-Look-Alike Assessment  
-↓  
-Spill Polygon + Confidence
+## F01 — Multi-Source Satellite Data Ingestion
 
-## Primary Data Source
+**Classification:** BASELINE / EXISTING
+**Importance:** 🔴 CRITICAL
+**SIH MVP:** ✅ YES
 
-### Sentinel-1 SAR
+### Purpose
 
-Initial focus:
+Provide the satellite imagery required for oil-spill detection and monitoring.
 
-- VV polarization
-- VH polarization where useful
+### Primary data source
 
-Optional secondary source:
+* Sentinel-1 SAR
+* VV polarization initially
+* VH polarization where useful
 
-- Sentinel-2 optical imagery when suitable and cloud-free.
+### Optional sources
 
-## SAR Processing
+* Sentinel-2 optical imagery when cloud-free
+* Other compatible Earth-observation datasets
 
-Potential pipeline:
+### Why we need it
 
-Raw Sentinel-1  
-↓  
-Radiometric Calibration  
-↓  
-Speckle / Noise Handling  
-↓  
-Geometric Correction  
-↓  
-Normalization  
-↓  
-AOI Extraction  
-↓  
-ML Input
+Satellite imagery provides the initial observation of a possible oil slick.
 
-### Technologies
+SAR is particularly useful for maritime monitoring because it can operate without daylight and is less affected by cloud cover than optical imagery.
 
-- GDAL
-- rasterio
-- NumPy
-- OpenCV
-- GeoPandas
-- SNAP where appropriate
+### Technology
 
-## ML Model
+* Sentinel-1 SAR
+* Copernicus data ecosystem
+* Python
+* rasterio
+* GDAL
+* GeoPandas
+* Shapely
 
-Recommended starting models:
+### SIH implementation
 
-- U-Net
-- U-Net++
-- DeepLabV3+
-- SegFormer
+We do **not** need to build a global production satellite ingestion infrastructure.
 
-The SIH prototype should prioritize a reliable and trainable model rather than attempting to invent a new neural-network architecture.
+For the prototype, we can use a prepared set of Sentinel-1 scenes and demonstrate the processing pipeline.
 
-## Dataset
+### Limitations
 
-### Krestenitis et al.
+Satellite observations are constrained by:
 
-The dataset contains Sentinel-1 SAR imagery with classes including:
+* revisit intervals
+* acquisition geometry
+* sea state
+* wind conditions
+* image quality
+* cloud cover for optical imagery
 
-- Sea
-- Oil spill
-- Look-alike
-- Ship
-- Land
+Therefore, the system cannot guarantee continuous observation of every spill.
 
-Paper:
+---
+
+# F02 — AI Oil-Spill Detection & Segmentation
+
+**Classification:** BASELINE / EXISTING
+**Importance:** 🔴 CRITICAL
+**SIH MVP:** ✅ YES
+
+### Purpose
+
+Detect and segment regions in satellite imagery that are likely to correspond to oil spills.
+
+### Recommended technology
+
+Possible models:
+
+* U-Net
+* U-Net++
+* DeepLabV3+
+* SegFormer
+
+### SIH recommendation
+
+Use a **U-Net-family segmentation model** initially because it is practical to train, explain, and demonstrate within the hackathon timeframe.
+
+### Output
+
+The model produces:
+
+* oil-spill segmentation mask
+* spill polygon
+* affected area
+* model confidence
+
+### Dataset
+
+The Krestenitis dataset is particularly relevant because it uses Sentinel-1 SAR imagery and contains classes including:
+
+* oil spill
+* look-alike
+* ship
+* land
+* sea
+
+### Evaluation
+
+Use:
+
+* IoU
+* Dice/F1
+* Precision
+* Recall
+* False-positive rate
+* False-negative rate
+
+### Honest novelty assessment
+
+We are **not claiming a novel oil-spill segmentation algorithm**.
+
+This is an established research problem and should be treated as a baseline capability.
+
+### Reference
+
+Krestenitis et al., *Oil Spill Identification from Satellite Images Using Deep Neural Networks*, Remote Sensing, 2019.
 
 https://doi.org/10.3390/rs11151762
 
-## Look-Alike Problem
-
-A dark SAR region does not automatically represent oil.
-
-Potential look-alikes include:
-
-- Low-wind areas
-- Biogenic films
-- Internal waves
-- Rain-related effects
-- Sea-state effects
-- Other dark formations
-
-Therefore:
-
-Dark SAR Region  
-↓  
-Possible Oil + Possible Look-Alike  
-↓  
-Context + Model + Temporal Evidence  
-↓  
-Probable Spill Assessment
-
-## Output
-
-The system produces:
-
-- Spill mask
-- Spill polygon
-- Estimated area
-- Detection confidence
-- Look-alike risk
-- Data-quality indicator
-
-Example:
-
-Oil-Spill Likelihood: HIGH  
-Look-Alike Risk: MEDIUM  
-Detection Confidence: HIGH  
-Data Adequacy: MEDIUM
-
-## Important Limitation
-
-Do not say:
-
-> "This dark patch is definitely oil."
-
-Use:
-
-> "The observed SAR signature is consistent with a probable oil spill."
-
-## Evaluation
-
-- IoU
-- Dice/F1
-- Precision
-- Recall
-- False-positive rate
-- False-negative rate
-
-## Honest Novelty Assessment
-
-Oil-spill segmentation using Sentinel-1 is established research.
-
-We do **not** claim a novel segmentation architecture.
-
-Our improvement is integrating detection and look-alike assessment into the larger investigation workflow.
-
 ---
 
-# 5. Feature 2 — Multi-Temporal Spill Reconstruction & Characterization
+# F03 — SAR Look-Alike Rejection
 
-**Classification:** Improvement  
-**Importance:** Critical  
-**SIH MVP:** Yes  
-**Feasibility:** High  
-**Technical Depth:** High  
-**Novelty:** Moderate at system level
+**Classification:** BASELINE / IMPROVEMENT
+**Importance:** 🔴 CRITICAL
+**SIH MVP:** ✅ YES
 
-## Purpose
+### Purpose
 
-A single satellite image provides a snapshot.
+Reduce false positives caused by non-oil regions that appear similar to oil in SAR imagery.
 
-Multiple observations allow the system to reconstruct how the observed spill changed over time.
+### Possible look-alikes
 
-T1 → Spill Geometry  
-T2 → Spill Geometry  
-T3 → Spill Geometry  
-↓  
-Temporal Analysis  
-↓  
-Observed Spill Evolution
+Depending on environmental conditions:
 
-## Characterization
+* low-wind areas
+* natural films
+* biogenic slicks
+* internal waves
+* rain effects
+* sea-state effects
+* other dark SAR formations
 
-For every suitable observation calculate:
-
-- Area
-- Perimeter
-- Centroid
-- Bounding box
-- Dimensions
-- Shape
-- Geographic coordinates
-- Timestamp
-- Polygon
-
-## Temporal Analysis
-
-Track:
-
-- Area change
-- Centroid displacement
-- Shape change
-- Expansion
-- Contraction
-- Persistence
-- Disappearance
-- Observation gaps
-
-Example:
-
-T1 → 8 km²  
-T2 → 14 km²  
-T3 → 21 km²
-
-## Time-Window Estimation
-
-Where sufficient observations exist, estimate a plausible source-compatible time window.
-
-Do not claim:
-
-> "The spill is exactly 6 hours old."
-
-Use:
-
-> "The available observations constrain the spill to a source-compatible time window."
-
-## Oil-Spill Time Machine
-
-Optional interface:
-
-PAST ---------------- NOW ---------------- FUTURE
-
-The interface can display:
-
-- Historical observations
-- Current observed state
-- Modelled states
-- Forecast states
-
-Clearly label:
-
-- OBSERVED
-- MODELLED
-- FORECAST
-
-## Limitation
-
-Sentinel-1 provides discrete observations rather than continuous video.
-
-Therefore:
-
-> Multi-temporal reconstruction is not continuous real-time tracking.
-
-## Technologies
-
-- rasterio
-- GeoPandas
-- Shapely
-- PostGIS
-- Image registration
-- Temporal GIS
-- Satellite metadata
-
-## Honest Novelty Assessment
-
-Temporal satellite analysis is established.
-
-Our improvement is using temporal evidence as an input to source-hypothesis and vessel investigation.
-
----
-
-# 6. Feature 3 — Environmental Drift & Backward Hindcasting → Source Hypotheses
-
-**Classification:** Existing + Improvement  
-**Importance:** Critical  
-**SIH MVP:** Yes  
-**Feasibility:** Medium-High  
-**Technical Depth:** Very High  
-**Algorithmic Novelty:** Low
-
-## Purpose
-
-Estimate how an observed slick could have moved under environmental conditions and generate physically plausible source hypotheses.
-
-### Critical Principle
-
-> **Backtracking does not directly identify the exact source.**
-
-## Environmental Inputs
-
-Potential inputs:
-
-- Wind speed
-- Wind direction
-- Ocean currents
-- Waves
-- Stokes drift
-
-Potential data sources:
-
-- Copernicus
-- ECMWF
-- NOAA
-- Other suitable oceanographic products
-
-## Drift Model
-
-Recommended established framework:
-
-**OpenDrift**
-
-Reference:
-
-https://opendrift.github.io/
-
-## Forward Simulation
-
-Possible Source  
-↓  
-Environmental Conditions  
-↓  
-Particle Simulation  
-↓  
-Possible Future Movement
-
-## Backward Hindcasting
-
-Observed Spill  
-↓  
-Environmental Conditions  
-↓  
-Backward Particle Simulation  
-↓  
-Multiple Possible Source Regions
-
-## Source Hypotheses
-
-Example:
-
-H1  
-Region: A  
-Time Window: X–Y  
-Compatibility: HIGH
-
-H2  
-Region: B  
-Time Window: X–Y  
-Compatibility: MEDIUM
-
-H3  
-Region: C  
-Compatibility: LOW
-
-## Why Multiple Hypotheses?
-
-The inverse problem may not have a unique solution.
-
-Different:
-
-- Source locations
-- Source times
-- Environmental assumptions
-
-may produce similar observed slick positions.
-
-Therefore the system preserves alternative explanations.
-
-## Correct Terminology
-
-Use:
-
-- Plausible source region
-- Source hypothesis
-- Physically compatible source region
-- Source-compatible time window
-
-Avoid:
-
-- Exact spill origin
-- Source identified
-- Spill definitely started at coordinate X
-
-## Uncertainty
-
-Potential sources:
-
-- Environmental forcing errors
-- Current/wind resolution
-- Model assumptions
-- Unresolved physical processes
-- Satellite observation uncertainty
-
-Where possible, represent uncertainty as an area or ensemble rather than a single exact trajectory.
-
-## Technologies
-
-- OpenDrift
-- Lagrangian particle modelling
-- Python
-- NumPy
-- xarray
-- NetCDF
-- Copernicus / ECMWF / NOAA data
-
-## Honest Novelty Assessment
-
-Drift modelling and backward hindcasting are established technologies.
-
-The system-level improvement is:
-
-Satellite  
-↓  
-Temporal Reconstruction  
-↓  
-Source Hypotheses  
-↓  
-AIS Correlation  
-↓  
-Evidence Fusion
-
-rather than treating backtracking as the final answer.
-
----
-
-# 7. Feature 4 — Historical AIS Vessel Reconstruction & Correlation
-
-**Classification:** Baseline / Existing  
-**Importance:** Critical  
-**SIH MVP:** Yes  
-**Feasibility:** High  
-**Technical Depth:** High  
-**Novelty:** Low
-
-## Purpose
-
-Identify vessels whose historical movement is compatible with generated source hypotheses.
-
-Source Hypothesis  
-+  
-Source-Compatible Time Window  
-↓  
-Historical AIS  
-↓  
-Candidate Vessel Tracks
-
-## AIS Fields
-
-Potential fields:
-
-- MMSI
-- Timestamp
-- Latitude
-- Longitude
-- Speed Over Ground
-- Course Over Ground
-- Heading
-- Vessel Type
-- Vessel Dimensions
-
-## Candidate Filtering
-
-### Spatial Filtering
-
-Was the vessel near the source hypothesis?
-
-### Temporal Filtering
-
-Was it present during the relevant time window?
-
-### Trajectory Filtering
-
-Was its historical movement compatible with the source region?
-
-Example:
-
-47 AIS vessels  
-↓  
-Spatial Filtering  
-↓  
-12 vessels  
-↓  
-Temporal Filtering  
-↓  
-7 vessels  
-↓  
-Trajectory Compatibility  
-↓  
-5 candidates
-
-## Critical Principle
-
-AIS is:
-
-> **Evidence, not ground truth.**
-
-AIS can contain:
-
-- Gaps
-- Noise
-- Delayed records
-- Transmission failures
-- Manipulated positions
-- Incomplete coverage
-
-## Commercial Tool Reality
-
-Commercial maritime-intelligence systems already provide sophisticated capabilities involving:
-
-- AIS tracking
-- Vessel analytics
-- Historical vessel reconstruction
-- Behavioural analytics
-- Satellite/AIS fusion
-- Maritime intelligence
-- Oil-spill-related intelligence
-
-Therefore:
-
-> **AIS tracking is not our innovation.**
-
-## Our Position
-
-AIS is an input to the investigation layer.
-
-Our proposed contribution occurs when AIS is connected with:
-
-Spill  
-+  
-Source Hypotheses  
-+  
-Drift  
-+  
-Temporal Evidence  
-+  
-Cross-Source Conflicts
-
----
-
-# 8. Feature 5 — Cross-Source Consistency & Evidence Conflict Detection
-
-**Classification:** Proposed Differentiator  
-**Importance:** High  
-**SIH MVP:** Yes  
-**Feasibility:** Medium-High  
-**Technical Depth:** Very High  
-**Novelty:** Moderate System-Level
-
-## Purpose
-
-Check whether different evidence sources agree or conflict.
-
-Sources include:
-
-- Satellite observations
-- Temporal reconstruction
-- AIS
-- Drift
-- Environmental data
-- Vessel trajectory
-
-## Example
-
-AIS:
-
-> Vessel reported at Location A.
-
-Satellite:
-
-> Vessel-like observation near Location B.
-
-Result:
-
-> AIS-Satellite inconsistency.
-
-## Conflict Types
-
-### Spatial Conflict
-
-AIS position does not agree with the relevant satellite observation.
-
-### Temporal Conflict
-
-Vessel was not present during the source-compatible time window.
-
-### Physical Conflict
-
-Vessel trajectory is poorly compatible with the drift-derived source hypothesis.
-
-### Data Conflict
-
-Important observations are missing or inconsistent.
-
-## AIS Gap Handling
-
-### Wrong
-
-> "The vessel was not there."
-
-### Correct
-
-> "AIS evidence unavailable during this interval."
-
-## AIS Spoofing Handling
-
-Do not claim:
-
-> "AIS spoofing detected."
-
-Use:
-
-> "AIS-satellite inconsistency detected. Possible explanations include transmission gaps, timing mismatch, data errors or deliberate manipulation. Further investigation is required."
-
-## Why This Matters
-
-Instead of blindly trusting one data source, the system asks:
-
-> **Do the available sources tell a consistent story?**
-
-## Honest Novelty Assessment
-
-We do not claim that AIS/satellite consistency checking has never been done.
-
-The defensible contribution is:
-
-> **OilTrace AI explicitly represents cross-source conflicts inside the oil-spill source-hypothesis workflow and propagates those conflicts into the evidence assessment.**
-
----
-
-# 9. Feature 6 — Evidence Fusion & Dynamic Hypothesis Ranking
-
-**Classification:** Proposed System-Level Differentiator  
-**Importance:** Critical  
-**SIH MVP:** Yes  
-**Feasibility:** High  
-**Technical Depth:** Very High  
-**Novelty:** Moderate-High at System Level
-
-## Purpose
-
-Combine evidence from Features 1–5 into transparent candidate/hypothesis assessments.
-
-This is the **central investigation layer**.
-
-## Evidence Inputs
-
-### Satellite Evidence
-
-- Spill detection
-- Spill geometry
-- Look-alike risk
-- Detection confidence
-
-### Temporal Evidence
-
-- Observed evolution
-- Displacement
-- Persistence
-- Observation gaps
-
-### Environmental Evidence
-
-- Wind
-- Currents
-- Environmental data quality
-
-### Drift Evidence
-
-- Source hypothesis
-- Trajectory compatibility
-- Uncertainty envelope
-
-### AIS Evidence
-
-- Vessel position
-- Trajectory
-- Timing
-- AIS completeness
-
-### Consistency Evidence
-
-- Supporting evidence
-- Contradictions
-- Missing evidence
-
-## Conceptual Scoring
-
-Spatial Compatibility  
-+  
-Temporal Compatibility  
-+  
-Drift Compatibility  
-+  
-AIS Trajectory Compatibility  
-+  
-Cross-Source Consistency  
-+  
-Data Quality  
-−  
-Contradictory Evidence  
-↓  
-Evidence Compatibility
-
-## Prototype Weighting
-
-Possible initial prototype weights:
-
-| Evidence | Weight |
-|---|---:|
-| Spatial compatibility | 25% |
-| Temporal compatibility | 20% |
-| Drift compatibility | 25% |
-| AIS trajectory compatibility | 15% |
-| Cross-source consistency | 10% |
-| Data quality | 5% |
-
-### Important
-
-These weights are **prototype assumptions**, not scientifically established probabilities.
-
-For production use, they require:
-
-- Domain expert review
-- Historical validation
-- Calibration
-- Sensitivity analysis
-
-## Candidate Ranking
-
-Example:
-
-Candidate A → HIGH  
-Candidate B → MEDIUM  
-Candidate C → LOW  
-Unknown → POSSIBLE
-
-## Dynamic Ranking
-
-Initial Evidence  
-↓  
-Initial Ranking  
-↓  
-New Satellite Observation  
-↓  
-New Evidence  
-↓  
-Recalculate  
-↓  
-Updated Ranking
-
-## No-Sufficient-Evidence Outcome
-
-The system must support:
-
-> **Insufficient evidence for reliable attribution.**
-
-Possible reasons:
-
-- High look-alike risk
-- Insufficient satellite observations
-- High source uncertainty
-- Major AIS gaps
-- Conflicting evidence
-- Insufficient historical evidence
-
-## Terminology
-
-Do NOT use:
-
-> Probability that Vessel A is guilty.
-
-Do NOT use:
-
-> AI proves Vessel A caused the spill.
-
-Use:
-
-- Evidence compatibility
-- Investigation priority
-- Candidate hypothesis
-- Supporting evidence
-- Contradictory evidence
-- Insufficient evidence
-
-## Evidence Dependency
-
-Not all evidence is statistically independent.
-
-Example:
-
-Satellite  
-↓  
-Source Region  
-↓  
-AIS Candidate
-
-Therefore correlated evidence must not be presented as independent proof.
-
-## Honest Novelty Assessment
-
-The individual evidence sources are not novel.
-
-The proposed contribution is:
-
-> **A transparent spill-centric evidence-fusion layer that preserves supporting, contradictory and missing evidence while ranking competing source/vessel hypotheses instead of forcing a single attribution.**
-
----
-
-# 10. Feature 7 — Forensic Investigation Graph & Explainable Evidence Chain
-
-**Classification:** Proposed Workflow Differentiator  
-**Importance:** High  
-**SIH MVP:** Yes for core explanation  
-**Feasibility:** Medium-High  
-**Technical Depth:** High  
-**Novelty:** Moderate System-Level
-
-## Purpose
-
-Show investigators:
-
-> **Why did the system rank this candidate?**
-
-## Evidence Chain
-
-Satellite Observation  
-↓  
-Spill Polygon  
-↓  
-Temporal Evidence  
-↓  
-Environmental Conditions  
-↓  
-Source Hypothesis  
-↓  
-Vessel Track  
-↓  
-Supporting Evidence  
-↓  
-Contradictory Evidence  
-↓  
-Candidate Assessment  
-↓  
-Human Decision
-
-## Forensic Vessel Reconstruction
-
-When a candidate is selected:
-
-Vessel A  
-↓  
-Historical AIS Track  
-↓  
-Relevant Time Window  
-↓  
-Source Hypothesis  
-↓  
-Drift Compatibility  
-↓  
-Supporting / Contradictory Evidence
-
-## Evidence Graph
-
-### Nodes
-
-- Incident
-- Satellite observation
-- Spill polygon
-- Source hypothesis
-- Environmental condition
-- Vessel
-- AIS track
-- Evidence item
-- Contradiction
-- Investigator decision
-
-### Relationships
-
-- Supports
-- Contradicts
-- Spatially compatible
-- Temporally compatible
-- Derived from
-- Uncertain
-
-## Example
-
-INCIDENT  
-├── SATELLITE  
-│   └── SPILL MASK  
-├── DRIFT  
-│   └── SOURCE H1  
-└── AIS  
-    └── VESSEL A  
-↓  
-EVIDENCE FUSION  
-↓  
-CANDIDATE A  
-↓  
-HUMAN REVIEW
-
-## Competing Hypotheses
-
-H1:
-
-> Vessel A + Source Region X
-
-H2:
-
-> Vessel B + Source Region Y
-
-H3:
-
-> Unknown Source + Region Z
-
-Possible results:
-
-H1 → High compatibility  
-H2 → Medium compatibility  
-H3 → Insufficient evidence
-
-## Correction / Audit Mechanism
-
-If the system incorrectly ranks a vessel:
-
-AI Assessment  
-↓  
-Human Review  
-↓  
-Reject / Uncertain  
-↓  
-Reason Recorded  
-↓  
-Audit Trail
-
-Store:
-
-- Original result
-- Evidence used
-- Model version
-- Investigator decision
-- Correction reason
-- Timestamp
-
-Do not silently overwrite historical results.
-
-## Human-in-the-Loop
-
-The AI produces:
-
-> Candidate + evidence
-
-The investigator decides:
-
-- Investigate
-- Reject
-- Uncertain
-
-The system does not make the final legal or enforcement decision.
-
-## Honest Novelty Assessment
-
-Evidence graphs and explainability are established concepts.
-
-We do not claim that graphs themselves are novel.
-
-Our proposed workflow is the specific connection:
-
-Satellite  
-↓  
-Spill  
-↓  
-Source Hypothesis  
-↓  
-Vessel  
-↓  
-Contradiction  
-↓  
-Candidate  
-↓  
-Investigator
-
----
-
-# 11. Feature 8 — Forward Forecasting, Impact Assessment & Historical Replay
-
-**Classification:** Existing + Improvement + Validation  
-**Importance:** High  
-**SIH MVP:** Optional / Validation Critical  
-**Feasibility:** Medium-High  
-**Technical Depth:** High
-
-## 11.1 Forward Spill Forecasting
-
-Use the current observed spill state and environmental forcing to estimate possible future movement.
-
-Current Spill  
-+  
-Wind  
-+  
-Currents  
-↓  
-Drift Model  
-↓  
-12h / 24h / 48h Possible Movement
-
-## 11.2 Forecast Output
-
-Show:
-
-- Predicted trajectory
-- Predicted spread
-- Uncertainty region
-- Potential future locations
-
-Clearly distinguish:
-
-- OBSERVED
-- MODELLED
-- FORECAST
-
-## 11.3 Forecast Correction
-
-When a new satellite observation arrives:
-
-Previous Forecast  
-↓  
-New Observation  
-↓  
-Compare  
-↓  
-Forecast Error  
-↓  
-Update Model State  
-↓  
-Next Forecast
-
-A full operational data-assimilation system is outside SIH scope.
-
-## 11.4 Impact Assessment
-
-Potential overlay layers:
-
-- Coastline
-- Protected areas
-- Fisheries
-- Ports
-- Environmentally sensitive zones
-
-Output:
-
-> Potentially affected / priority areas
-
-Not:
-
-> Guaranteed contamination.
-
-## 11.5 Historical Replay
-
-Historical events can be replayed through:
-
-Historical Event  
-↓  
-Satellite  
-↓  
-Detection  
-↓  
-Temporal Reconstruction  
-↓  
-Environmental Data  
-↓  
-Drift  
-↓  
-Source Hypotheses  
-↓  
-AIS  
-↓  
-Evidence Fusion  
-↓  
-Candidate Ranking
-
-## 11.6 Why Historical Replay Matters
-
-It allows evaluation of the **end-to-end system**, not only individual models.
-
-## 11.7 Ground Truth Challenge
-
-Detection validation can use:
-
-Satellite  
-+  
-Oil / Look-Alike Labels
-
-Attribution validation requires much more:
-
-Satellite  
-+  
-Spill Timing  
-+  
-AIS  
-+  
-Environmental Data  
-+  
-Independent Evidence  
-+  
-Known / Supported Source Vessel
-
-Large public datasets containing all of these fields with confirmed responsible vessels are difficult to obtain.
-
-Therefore:
-
-> **Do not claim a large confirmed attribution dataset unless one is actually obtained and verified.**
-
-Classify historical cases as:
-
-- CONFIRMED
-- PROBABLE
-- UNKNOWN
-
-Only confirmed cases should support strong attribution-validation claims.
-
----
-
-# 12. Cross-Cutting Data Quality & Uncertainty
-
-Data quality and uncertainty are not separate major features. They affect every stage.
-
-## Satellite Quality
-
-Consider:
-
-- Image quality
-- Observation gaps
-- Look-alike risk
-- Geographic coverage
-
-## AIS Quality
-
-Consider:
-
-- Coverage
-- Missing intervals
-- Suspicious jumps
-- Reporting gaps
-
-## Environmental Data Quality
-
-Consider:
-
-- Spatial resolution
-- Temporal resolution
-- Missing data
-- Forcing uncertainty
-
-## Drift Uncertainty
-
-Consider:
-
-- Environmental forcing uncertainty
-- Particle spread
-- Model assumptions
-- Source-region size
-
----
-
-# 13. Model Uncertainty vs Data Adequacy
-
-These are different concepts.
-
-## Model Uncertainty
-
-The model has relevant information but remains uncertain.
-
-Example:
-
-> Oil vs look-alike is ambiguous.
-
-## Data Inadequacy
-
-The available data is insufficient or poorly representative.
-
-Example:
-
-> Environmental conditions for the event are poorly represented by the available forcing data.
-
-## SIH Implementation
-
-Use qualitative states:
-
-- HIGH
-- MEDIUM
-- LIMITED
-- UNKNOWN
-
-Avoid fake precision such as:
-
-> Data Adequacy = 63.27%
-
-unless a scientifically justified methodology is implemented.
-
----
-
-# 14. Adversarial & Failure Cases
-
-| Failure Case | Potential Result | System Response |
-|---|---|---|
-| SAR look-alike | False spill | Look-alike analysis |
-| Poor image quality | Low confidence | Quality warning |
-| Satellite revisit gap | Missing event stage | Observation-gap indicator |
-| AIS gap | Missing vessel evidence | "AIS unavailable" |
-| AIS manipulation | Incorrect declared location | Cross-source inconsistency |
-| Drift error | Wrong source hypothesis | Uncertainty envelope |
-| Multiple plausible sources | Ambiguous attribution | Competing hypotheses |
-| Wrong candidate ranking | Potential false investigation | Human review |
-| Insufficient evidence | Unreliable attribution | No-attribution outcome |
-| Dataset bias | Poor generalization | Data adequacy warning |
-
----
-
-# 15. Maritime-Domain Assumptions
-
-The system should not invent maritime rules and present them as universal facts.
-
-For the SIH prototype:
-
-- Use objective spatial signals.
-- Use objective temporal signals.
-- Use literature-supported indicators.
-- Make thresholds transparent.
-- Avoid declaring behaviour illegal.
-- Avoid treating anomalies as proof of wrongdoing.
-
-For operational deployment:
-
-> Maritime-domain experts should validate behavioural assumptions, thresholds and interpretation.
-
----
-
-# 16. Commercial-System Positioning
-
-Commercial maritime-intelligence systems already provide capabilities including:
-
-- AIS tracking
-- Vessel analytics
-- Historical vessel reconstruction
-- Behavioural analytics
-- Satellite/AIS fusion
-- Maritime risk intelligence
-- Oil-spill-related intelligence
-
-Therefore OilTrace AI does **not** claim:
-
-> "We invented vessel intelligence."
-
-Instead, OilTrace AI is positioned as a:
-
-> **Satellite-first oil-spill investigation workflow.**
-
-Observed Spill  
-↓  
-Spill Reconstruction  
-↓  
-Environmental Hindcasting  
-↓  
-Source Hypotheses  
-↓  
-AIS Correlation  
-↓  
-Cross-Source Consistency  
-↓  
-Evidence Fusion  
-↓  
-Candidate / Hypothesis Ranking  
-↓  
-Explainable Investigation
-
-Existing AIS/intelligence sources can potentially be integrated as data providers in future deployment.
-
----
-
-# 17. What Is Existing?
-
-The following technologies are established:
-
-- Sentinel-1 SAR
-- SAR preprocessing
-- Oil-spill segmentation
-- U-Net and related segmentation models
-- Look-alike classification research
-- Spill geometry extraction
-- Multi-temporal satellite analysis
-- AIS tracking
-- Vessel trajectory analysis
-- Drift modelling
-- Lagrangian particle modelling
-- Hindcasting
-- Forecasting
-- GIS
-- Evidence graphs
-- Explainable AI concepts
-
-We do **not** claim to have invented these technologies.
-
----
-
-# 18. What Is Our Proposed Contribution?
-
-## 18.1 Hypothesis-Based Source Investigation
-
-Instead of:
-
-Backtracking  
-↓  
-One Source
-
-use:
-
-Backtracking  
-↓  
-Multiple Source Hypotheses  
-↓  
-Evidence Evaluation
-
-## 18.2 Cross-Source Conflict Representation
-
-Explicitly represent:
-
-- Agreement
-- Contradiction
-- Missing evidence
-
-between:
-
-- Satellite
-- AIS
-- Drift
-- Temporal observations
-
-## 18.3 Evidence Fusion
-
-Combine evidence with:
-
-- Data quality
-- Uncertainty
-- Contradictions
-- Evidence dependencies
-
-rather than treating every signal as independent proof.
-
-## 18.4 Dynamic Hypothesis Ranking
-
-New observations can modify candidate/hypothesis rankings.
-
-## 18.5 No-Sufficient-Evidence Outcome
-
-The system can explicitly conclude:
-
-> **Insufficient evidence for reliable attribution.**
-
-## 18.6 Explainable Investigation
-
-Every candidate should have:
-
-- Supporting Evidence
-- Contradictory Evidence
-- Missing Evidence
-- Data Limitations
-- Reason for Ranking
-
----
-
-# 19. Claims We Can Defend
-
-We can reasonably claim that:
-
-1. Sentinel-1 SAR can be used for probable oil-spill detection.
-2. Multiple satellite observations can reconstruct observed spill evolution.
-3. Environmental drift models can generate physically plausible movement and source hypotheses.
-4. Historical AIS can be correlated with source-compatible regions and time windows.
-5. Cross-source comparison can expose evidence inconsistencies.
-6. Multiple evidence sources can be organized into transparent candidate assessments.
-7. Investigators can inspect supporting and contradictory evidence behind a candidate.
-8. The system can refuse attribution when evidence is insufficient.
-
----
-
-# 20. Claims We Must NOT Make
-
-Do not claim:
-
-- The system identifies the exact spill source.
-- The system identifies the guilty vessel.
-- The system proves AIS spoofing.
-- A nearby vessel is responsible.
-- AIS absence proves vessel absence.
-- Drift gives the exact physical trajectory.
-- Every SAR dark patch is oil.
-- Confidence is the probability of guilt.
-- Evidence sources are independent proofs.
-- The system automatically provides legal evidence.
-- The system replaces maritime authorities.
-- Our segmentation architecture is novel.
-- Our drift algorithm is novel.
-- Our AIS tracking is novel.
-- Commercial maritime-intelligence systems cannot perform related capabilities.
-
----
-
-# 21. End-to-End User Workflow
-
-## Step 1 — Spill Detection
-
-Satellite imagery enters the system.
-
-The AI detects a probable oil-spill region.
-
-## Step 2 — Look-Alike Assessment
-
-The system checks whether the SAR signature could plausibly be a look-alike.
-
-## Step 3 — Spill Characterization
-
-Calculate:
-
-- Area
-- Location
-- Geometry
-- Timestamp
-
-## Step 4 — Temporal Reconstruction
-
-Compare previous and subsequent observations.
-
-## Step 5 — Environmental Analysis
-
-Load:
-
-- Wind
-- Currents
-- Relevant environmental data
-
-## Step 6 — Backward Hindcasting
-
-Generate:
-
-> Multiple plausible source hypotheses.
-
-## Step 7 — AIS Correlation
-
-Search historical vessel activity around:
-
-- Source hypotheses
-- Source-compatible time windows
-
-## Step 8 — Cross-Source Consistency
-
-Compare:
-
-- Satellite
-- AIS
-- Drift
-- Timeline
-
-## Step 9 — Evidence Fusion
+### Approach
 
 Combine:
 
-- Supporting evidence
-- Contradictory evidence
-- Missing evidence
-- Data quality
-- Uncertainty
+* segmentation model
+* contextual image features
+* texture
+* geometry
+* temporal persistence
+* environmental conditions
+* nearby vessel information
 
-## Step 10 — Candidate Ranking
+### Why it matters
+
+A SAR dark patch does **not automatically mean oil**.
+
+A useful operational system must distinguish probable oil from look-alike phenomena.
+
+### Honest limitation
+
+Perfect oil/look-alike separation is difficult.
+
+The system should therefore expose uncertainty instead of treating every detection as certain oil.
+
+### Reference
+
+Krestenitis et al.
+
+https://doi.org/10.3390/rs11151762
+
+---
+
+# F04 — Spill Geometry & Quantification
+
+**Classification:** BASELINE
+**Importance:** 🟠 HIGH
+**SIH MVP:** ✅ YES
+
+### Purpose
+
+Convert the AI segmentation mask into usable geographic information.
+
+### Outputs
+
+* spill polygon
+* estimated area
+* centroid
+* bounding box
+* perimeter
+* shape descriptors
+* affected region
+
+### Technology
+
+* raster-to-vector conversion
+* rasterio
+* GDAL
+* GeoPandas
+* Shapely
+* PostGIS
+
+### Why it matters
+
+Investigators need a geographic representation of the spill rather than only a classification label.
+
+---
+
+# F05 — Temporal Satellite Change Analysis
+
+**Classification:** IMPROVEMENT / EXISTING RESEARCH
+**Importance:** 🔴 CRITICAL
+**SIH MVP:** ✅ YES
+
+### Purpose
+
+Compare multiple satellite observations to understand how the detected spill changes over time.
+
+### System compares
+
+* spill location
+* spill area
+* centroid
+* shape
+* displacement
+* persistence
+* expansion
+* disappearance
+
+### Example
+
+```text
+Observation 1 → 8 km²
+Observation 2 → 14 km²
+Observation 3 → 21 km²
+```
+
+The system can then report:
+
+> "The observed slick expanded from approximately 8 km² to 21 km² across the available satellite observations."
+
+### Why it matters
+
+A single satellite image provides only a snapshot.
+
+Multiple observations provide a **temporal history**.
+
+### Limitations
+
+Satellite revisit intervals mean we normally do not observe the exact moment a spill began.
+
+The system therefore reconstructs the event from discrete observations.
+
+---
+
+# F06 — Spill Evolution Reconstruction
+
+**Classification:** IMPROVEMENT
+**Importance:** 🟠 HIGH
+**SIH MVP:** ✅ YES
+
+### Purpose
+
+Convert multiple individual detections into one evolving spill event.
+
+### Outputs
+
+* event timeline
+* area vs time
+* centroid movement
+* shape evolution
+* observation gaps
+* first/last detected observations
+
+### Why it matters
+
+This creates the temporal context needed for source investigation.
+
+Instead of treating every image independently, the system understands them as observations of the same evolving event.
+
+---
+
+# F07 — Environmental Context Layer
+
+**Classification:** BASELINE / EXISTING
+**Importance:** 🟠 HIGH
+**SIH MVP:** ✅ YES
+
+### Purpose
+
+Provide environmental information required to understand oil movement.
+
+### Inputs
+
+Potentially:
+
+* wind speed
+* wind direction
+* ocean currents
+* waves
+* Stokes drift
+
+### Potential data sources
+
+* ECMWF / Copernicus
+* NOAA
+* appropriate oceanographic datasets
+
+### Why it matters
+
+Oil does not remain stationary.
+
+Its movement is influenced by:
+
+* wind
+* currents
+* waves
+* other physical processes
+
+### Limitation
+
+Environmental datasets also have uncertainty and resolution limitations.
+
+A drift model cannot be more accurate than the environmental information driving it.
+
+---
+
+# F08 — Oil-Spill Drift Simulation
+
+**Classification:** EXISTING / BASELINE
+**Importance:** 🔴 CRITICAL
+**SIH MVP:** ✅ YES
+
+### Purpose
+
+Simulate the movement of oil under environmental conditions.
+
+### Recommended approach
+
+Use a **Lagrangian particle model**.
+
+For the MVP:
+
+* OpenDrift
+* wind forcing
+* ocean currents
+* particle simulation
+
+### Concept
+
+```text
+Initial Spill
+     ↓
+Wind + Current Data
+     ↓
+Particle Simulation
+     ↓
+Predicted Oil Movement
+```
+
+### Why it matters
+
+It provides a physical basis for understanding how the observed slick may have moved.
+
+### Important point
+
+Drift simulation is **not new technology**.
+
+We are using an established modelling approach.
+
+### References
+
+OpenDrift / oil-spill trajectory research:
+
+https://doi.org/10.1016/j.marpolbul.2023.115497
+
+https://doi.org/10.1016/j.dsr2.2016.04.002
+
+---
+
+# F09 — Source Backtracking / Probable Source Region
+
+**Classification:** IMPROVEMENT / ADVANCED EXISTING RESEARCH
+**Importance:** 🔴 CRITICAL
+**SIH MVP:** ✅ YES
+
+### Purpose
+
+Instead of only predicting where the oil will go, estimate where it could have originated.
+
+### Concept
+
+```text
+Observed Spill
+      ↓
+Wind + Current Conditions
+      ↓
+Backward Particle Trajectories
+      ↓
+Possible Source Region
+      ↓
+Candidate Vessels
+```
+
+### Output
+
+The system generates:
+
+* probable source region
+* uncertainty envelope
+* possible source locations
+* temporal source window
+
+### Why this is important
+
+Detection answers:
+
+> "Where is the oil?"
+
+Backtracking attempts to answer:
+
+> "Where could it have originated?"
+
+That is much more useful for source investigation.
+
+### Technology
+
+* Lagrangian particles
+* backward trajectories
+* wind/current forcing
+* ensemble simulation
+* uncertainty envelope
+
+### Honest novelty assessment
+
+Backtracking itself is **not novel**.
+
+The proposed differentiation is connecting the backtracked source region directly to:
+
+* satellite observations
+* spill timeline
+* AIS vessel activity
+* evidence ranking
+
+### Reference
+
+https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2024.1427604/full
+
+---
+
+# F10 — AIS Vessel Correlation
+
+**Classification:** BASELINE / EXISTING
+**Importance:** 🔴 CRITICAL
+**SIH MVP:** ✅ YES
+
+### Purpose
+
+Identify vessels whose location and movement are compatible with the estimated spill source region and time.
+
+### AIS fields
+
+Potentially:
+
+* MMSI
+* timestamp
+* latitude
+* longitude
+* speed over ground
+* course over ground
+* heading
+* vessel type
+* vessel dimensions
+* destination
+
+### Candidate filtering
+
+A vessel becomes a candidate based on factors such as:
+
+* spatial proximity
+* temporal compatibility
+* source-region overlap
+* trajectory compatibility
+* vessel type
+* AIS data quality
+
+### Critical principle
+
+> **AIS is evidence, not ground truth.**
+
+AIS may be:
+
+* missing
+* delayed
+* noisy
+* switched off
+* spoofed
+* incomplete
+
+### Honest novelty assessment
+
+AIS vessel correlation already exists commercially and academically.
+
+We are **not claiming this as a new technology**.
+
+---
+
+# F11 — Vessel Behaviour / Trajectory Anomaly Analysis
+
+**Classification:** EXISTING / IMPROVEMENT
+**Importance:** 🟡 MEDIUM-HIGH
+**SIH MVP:** ⚠️ IF TIME
+
+### Purpose
+
+Identify vessel behaviour that deserves additional investigation.
+
+### Possible signals
+
+* unexpected stopping
+* unusual course change
+* unusual speed change
+* AIS gap
+* route deviation
+* unusual loitering
+* presence near source region
+
+### Critical warning
+
+These signals are **not proof of illegal activity**.
+
+For example:
+
+> A vessel stopping does not mean that it dumped oil.
+
+A vessel may stop for completely legitimate reasons.
+
+### Recommended approach
+
+For the MVP:
+
+* transparent rules
+* trajectory statistics
+* simple anomaly detection
+
+Potential future:
+
+* Isolation Forest
+* sequence models
+* learned behaviour models
+
+### Domain limitation
+
+What constitutes "suspicious" behaviour requires maritime-domain validation.
+
+We should not invent arbitrary thresholds and present them as maritime facts.
+
+---
+
+# F12 — AIS–Satellite Consistency / Adversarial Check
+
+**Classification:** PROPOSED / UNIQUE SYSTEM FEATURE
+**Importance:** 🔴 HIGH
+**SIH MVP:** ✅ YES
+
+### Purpose
+
+Detect inconsistencies between AIS information and satellite observations.
+
+### Why it is needed
+
+A vessel may:
+
+* turn off AIS
+* have incomplete AIS records
+* broadcast inaccurate information
+* potentially spoof its location
+
+Therefore, the system should not blindly trust AIS.
+
+### Example
+
+```text
+AIS:
+Vessel reported 40 km away
+
+Satellite:
+Vessel observed near suspected source region
+
+Result:
+AIS–Satellite Inconsistency
+```
+
+### Important limitation
+
+The system should **not** say:
+
+> "The vessel spoofed AIS."
+
+Instead:
+
+> "AIS and satellite observations are inconsistent; further investigation is required."
+
+### Why this is differentiated
+
+The individual components already exist.
+
+The proposed contribution is treating **cross-source inconsistency as explicit investigation evidence** within the oil-spill workflow.
+
+---
+
+# F13 — Multi-Source Evidence Fusion
+
+**Classification:** PROPOSED / UNIQUE
+**Importance:** 🔴 CRITICAL
+**SIH MVP:** ✅ YES
+
+## Core Differentiator
+
+### Purpose
+
+Combine all relevant evidence into one investigation assessment.
+
+### Evidence sources
+
+1. Satellite detection
+2. Temporal evolution
+3. Spill geometry
+4. Environmental conditions
+5. Drift simulation
+6. Backtracked source region
+7. AIS trajectory
+8. Vessel proximity
+9. Vessel behaviour
+10. AIS–satellite consistency
+11. Data quality
+
+### Conceptual scoring
+
+```text
+Candidate Score
+    =
+Spatial Compatibility
++ Temporal Compatibility
++ Drift Compatibility
++ Trajectory Compatibility
++ Satellite Consistency
++ Vessel Compatibility
++ Supporting Evidence
+- Contradictory Evidence
+- Data Quality Penalties
+```
+
+### Important
+
+The score should represent:
+
+> **Evidence compatibility**
+
+not:
+
+> **Probability that the vessel is guilty**
+
+### Why this is important
+
+A vessel should not become the top candidate simply because:
+
+* it was nearby
+* its AIS track looks unusual
+* one model produced a high confidence value
+
+Multiple independent evidence layers should be considered.
+
+### Honest novelty statement
+
+The individual technologies already exist.
+
+The proposed novelty is the **operational evidence-fusion layer connecting them into one investigation pipeline**.
+
+---
+
+# F14 — Evidence Provenance / Explainable Investigation Record
+
+**Classification:** PROPOSED / UNIQUE
+**Importance:** 🔴 CRITICAL
+**SIH MVP:** ✅ YES
+
+### Purpose
+
+Allow an investigator to understand exactly why a vessel was ranked.
+
+### Each investigation record should contain
+
+* satellite scene ID
+* satellite timestamp
+* detection mask
+* spill polygon
+* estimated area
+* temporal observations
+* environmental data
+* drift assumptions
+* source-region estimate
+* AIS records used
+* candidate vessel
+* supporting evidence
+* contradictory evidence
+* model confidence
+* data adequacy
+* investigator decision
+
+### Example
+
+```text
+Candidate Vessel A
+
+Supporting:
+✓ Present near estimated source region
+✓ Time compatible
+✓ Trajectory compatible
+✓ Drift simulation intersects vessel track
+
+Contradictory:
+⚠ AIS gap during part of the relevant window
+
+Data limitations:
+⚠ Satellite observation gap of 8 hours
+
+Assessment:
+HIGH EVIDENCE COMPATIBILITY
+```
+
+### Why it matters
+
+An investigator should be able to ask:
+
+> "Why did the system rank this vessel?"
+
+and receive an understandable evidence trail.
+
+---
+
+# F15 — Model Uncertainty vs Data Adequacy
+
+**Classification:** PROPOSED / UNIQUE
+**Importance:** 🔴 CRITICAL
+**SIH MVP:** ⚠️ PROTOTYPE
+
+### Purpose
+
+Separate model uncertainty from insufficient training/observation data.
+
+### Model uncertainty
+
+The model has sufficient relevant data but is uncertain about its prediction.
 
 Example:
 
-Candidate A → HIGH  
-Candidate B → MEDIUM  
-Candidate C → LOW  
-Unknown → POSSIBLE
+> Image is ambiguous between oil and look-alike.
 
-## Step 11 — Explain
+### Data scarcity / inadequacy
+
+The model has insufficient representative examples.
+
+Example:
+
+> Very few training examples exist for this particular class, region, or environmental condition.
+
+### Why this distinction matters
+
+A low model confidence score does not automatically mean:
+
+> "The phenomenon is difficult to detect."
+
+It may mean:
+
+> "The model has insufficient representative training data."
+
+### Proposed output
+
+Instead of only:
+
+```text
+Confidence: 42%
+```
+
+show:
+
+```text
+Detection confidence: 42%
+Data adequacy: LIMITED
+
+Reason:
+Observation differs from available training distribution.
+```
+
+### Honest MVP scope
+
+A fully calibrated uncertainty framework is beyond the hackathon.
+
+For SIH we should:
+
+* expose model confidence
+* document training-data limitations
+* flag insufficient data where possible
+* avoid presenting confidence as probability of guilt
+
+---
+
+# F16 — Candidate Vessel Ranking
+
+**Classification:** PROPOSED / UNIQUE SYSTEM OUTPUT
+**Importance:** 🔴 CRITICAL
+**SIH MVP:** ✅ YES
+
+### Purpose
+
+Rank vessels according to evidence compatibility.
+
+### Example
+
+| Rank | Vessel   | Assessment                    |
+| ---- | -------- | ----------------------------- |
+| 1    | Vessel A | Strong evidence compatibility |
+| 2    | Vessel B | Moderate compatibility        |
+| 3    | Vessel C | Weak / contradictory evidence |
+
+### Terminology
+
+Use:
+
+* Candidate vessel
+* Evidence compatibility
+* Investigation priority
+* Supporting evidence
+* Contradictory evidence
+
+Avoid:
+
+* Guilty vessel
+* Responsible vessel
+* Confirmed polluter
+
+unless independently established by authorized investigation.
+
+### Why
+
+The system is **decision support**, not an automated legal attribution system.
+
+---
+
+# F17 — Human-in-the-Loop Investigation
+
+**Classification:** RESPONSIBLE DEPLOYMENT / BASELINE
+**Importance:** 🔴 CRITICAL
+**SIH MVP:** ✅ YES
+
+### Purpose
+
+Ensure automated results are reviewed by an authorized human investigator.
+
+### Investigator can
+
+* inspect satellite imagery
+* inspect spill mask
+* inspect timeline
+* inspect drift result
+* inspect AIS track
+* inspect evidence
+* accept candidate for investigation
+* reject candidate
+* mark uncertain
+* add notes
+
+### Investigation status
+
+```text
+Detected
+   ↓
+Under Review
+   ↓
+Candidate Generated
+   ↓
+Investigation Ongoing
+   ↓
+ ┌───────────────┐
+ ↓               ↓
+Rejected      Confirmed
+```
+
+### Why it matters
+
+The AI system does not possess the complete operational, legal, or contextual information needed to make an enforcement decision.
+
+---
+
+# F18 — Correction / Audit Mechanism
+
+**Classification:** PROPOSED / UNIQUE
+**Importance:** 🟠 HIGH
+**SIH MVP:** ⚠️ PROTOTYPE
+
+### Purpose
+
+Prevent an incorrect automated result from becoming irreversible.
+
+### Store
+
+* original model output
+* input data
+* model version
+* evidence
+* ranking
+* investigator decision
+* correction reason
+* timestamp
+
+### Investigator actions
+
+* reject candidate
+* change status
+* add evidence
+* add notes
+* record reason
+
+### Important principle
+
+Corrections should not silently delete previous results.
+
+They should create an **auditable investigation history**.
+
+---
+
+# F19 — Missing / Adversarial AIS Handling
+
+**Classification:** IMPROVEMENT / PROPOSED
+**Importance:** 🟠 HIGH
+**SIH MVP:** ⚠️ PROTOTYPE
+
+### Cases
+
+* AIS switched off
+* AIS data gap
+* spoofed position
+* inconsistent MMSI track
+* incomplete history
+* satellite/AIS mismatch
+
+### System behaviour
+
+Bad approach:
+
+> "No AIS record → vessel not involved."
+
+Better approach:
+
+> "AIS evidence unavailable or inconsistent; vessel cannot be ruled out based solely on AIS absence."
+
+### Why
+
+This makes the system more robust to incomplete or adversarial data.
+
+---
+
+# F20 — Historical Incident Replay
+
+**Classification:** VALIDATION / PROPOSED
+**Importance:** 🔴 CRITICAL
+**SIH MVP:** ✅ YES
+
+### Purpose
+
+Validate the complete pipeline against historical incidents.
+
+### Process
+
+```text
+Historical Incident
+       ↓
+Satellite Data
+       ↓
+Oil Detection
+       ↓
+Temporal Reconstruction
+       ↓
+Environmental Data
+       ↓
+Backtracking
+       ↓
+AIS Correlation
+       ↓
+Candidate Ranking
+       ↓
+Compare Against Known Evidence
+```
+
+### Questions to evaluate
+
+1. Did the system detect the spill?
+2. Was the estimated spill region reasonable?
+3. Was temporal evolution reconstructed correctly?
+4. Was the source region plausible?
+5. Was the known vessel ranked highly when sufficient evidence existed?
+6. Did the system correctly express uncertainty?
+
+### Critical principle
+
+The system should also receive credit for:
+
+> **Correctly refusing to attribute a vessel when evidence is insufficient.**
+
+---
+
+# F21 — Historical Ground-Truth Incident Dataset
+
+**Classification:** EXISTING DATA + PROJECT DATA
+**Importance:** 🔴 CRITICAL
+**SIH MVP:** ✅ YES
+
+### Purpose
+
+Create a small benchmark for end-to-end validation.
+
+### Desired fields
+
+* incident ID
+* incident date
+* location
+* satellite imagery
+* spill extent
+* known/probable source
+* vessel information
+* AIS track
+* environmental conditions
+* independent documentation
+
+### Important classification
+
+Historical incidents should be separated into:
+
+```text
+Confirmed source
+Probable source
+Source unknown
+```
+
+These must not be mixed.
+
+### Major limitation
+
+Public oil-spill segmentation datasets do **not necessarily contain confirmed responsible-vessel ground truth**.
+
+Therefore:
+
+* segmentation validation
+* source attribution validation
+
+must be treated as separate evaluation problems.
+
+### Dataset reference
+
+Krestenitis et al.:
+
+https://doi.org/10.3390/rs11151762
+
+Recent dataset context:
+
+https://doi.org/10.5194/essd-17-6807-2025
+
+---
+
+# F22 — Investigator Geospatial Dashboard
+
+**Classification:** BASELINE / SYSTEM INTEGRATION
+**Importance:** 🔴 CRITICAL
+**SIH MVP:** ✅ YES
+
+### Main map
+
+Display:
+
+* satellite imagery
+* spill segmentation
+* spill polygon
+* vessel tracks
+* candidate vessels
+* probable source region
+* drift particles
+
+### Side panel
+
+Display:
+
+* event information
+* spill area
+* detection confidence
+* data adequacy
+* candidate ranking
+* supporting evidence
+* contradictory evidence
+
+### Timeline
 
 Show:
 
-- Why the candidate ranked highly
-- Supporting evidence
-- Contradictory evidence
-- Missing evidence
-- Data limitations
+* satellite observations
+* spill growth
+* vessel positions
+* environmental conditions
 
-## Step 12 — Human Decision
+### Recommended technology
 
-The investigator can:
+Frontend:
 
-- Investigate
-- Reject
-- Mark uncertain
+* React
+* TypeScript
+* MapLibre GL / OpenLayers
+
+Backend:
+
+* FastAPI
+* Python
+* PostgreSQL/PostGIS
 
 ---
 
-# 22. Example Investigation Output
+# 4. Feature Priority Matrix
+
+| Priority                    | Features                                                                                                                                                                                                                             |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 🔴 **CRITICAL — MUST HAVE** | Satellite ingestion, oil detection, look-alike rejection, spill quantification, temporal analysis, environmental context, drift, backtracking, AIS correlation, evidence fusion, candidate ranking, dashboard, historical validation |
+| 🟠 **HIGH — SHOULD HAVE**   | Spill evolution, AIS-satellite inconsistency, evidence provenance, uncertainty/data adequacy, human investigation status, correction/audit                                                                                           |
+| 🟡 **MEDIUM — IF TIME**     | Vessel behaviour anomaly detection, advanced AIS anomaly analysis                                                                                                                                                                    |
+| ⚪ **FUTURE**                | Learned backtracking, advanced uncertainty calibration, global real-time AIS infrastructure, large historical database, advanced adversarial detection                                                                               |
+
+---
+
+# 5. What Is Actually Existing?
+
+The following technologies are **not claimed as our inventions**:
+
+* Sentinel-1 SAR oil-spill detection
+* U-Net / semantic segmentation
+* oil/look-alike classification
+* SAR change detection
+* AIS vessel tracking
+* vessel trajectory analysis
+* vessel anomaly detection
+* oil-spill drift modelling
+* Lagrangian particle tracking
+* oil-spill backtracking
+* geospatial visualization
+
+These are established technologies/research areas.
+
+---
+
+# 6. What Is Our Proposed Differentiation?
+
+The strongest differentiation is at the **system level**.
+
+## 6.1 Satellite-First Investigation
+
+Instead of starting with a generic maritime intelligence platform, the workflow starts with:
+
+> **"We observed a possible oil spill from satellite imagery."**
+
+The system then works toward identifying plausible source candidates.
+
+---
+
+## 6.2 Temporal Investigation
+
+The system does not treat a spill as a single image.
+
+It reconstructs:
+
+> **How the spill changed over time.**
+
+---
+
+## 6.3 Source-Oriented Backtracking
+
+Instead of stopping at:
+
+> "Oil detected here."
+
+the system asks:
+
+> "Given observed movement and environmental conditions, what source region is physically plausible?"
+
+---
+
+## 6.4 Cross-Source Evidence Fusion
+
+Satellite, environmental, AIS and temporal information are combined into one investigation assessment.
+
+---
+
+## 6.5 Contradiction-Aware Investigation
+
+The system explicitly records when different evidence sources disagree.
+
+For example:
 
 ```text
-==================================================
-             OIL SPILL INVESTIGATION
-==================================================
+Satellite:
+Vessel observed near source
 
-EVENT
---------------------------------------------------
-First observed: 14:20 UTC
-Last observed: 22:40 UTC
-Observed area: 18.6 km²
+AIS:
+Vessel reported elsewhere
 
-DETECTION
---------------------------------------------------
-Oil-Spill Likelihood: HIGH
-Look-Alike Risk: MEDIUM
-Data Adequacy: MEDIUM
-
-SOURCE HYPOTHESIS
---------------------------------------------------
-Region: 7.8 km uncertainty radius
-Time Window: 11:30–15:00 UTC
-Drift Uncertainty: MEDIUM
-
---------------------------------------------------
-CANDIDATE #1 — VESSEL A
---------------------------------------------------
-
-Evidence Compatibility: HIGH
-
-Supporting:
-✓ Spatial compatibility
-✓ Temporal compatibility
-✓ Drift compatibility
-✓ AIS trajectory compatibility
-
-Contradictory:
-⚠ AIS gap during relevant interval
-
-Data Limitations:
-⚠ Satellite observation gap
-⚠ Source-region uncertainty
-
---------------------------------------------------
-CANDIDATE #2 — VESSEL B
---------------------------------------------------
-
-Evidence Compatibility: MEDIUM
-
-Supporting:
-✓ Temporal compatibility
-
-Contradictory:
-⚠ Poor drift compatibility
-
---------------------------------------------------
-CANDIDATE #3 — VESSEL C
---------------------------------------------------
-
-Evidence Compatibility: LOW
-
-Supporting:
-✓ Nearby
-
-Contradictory:
-✗ Outside source-compatible time window
-
-==================================================
-SYSTEM STATUS:
-CANDIDATES FOR HUMAN INVESTIGATION
-
-NOT AN AUTOMATED ATTRIBUTION
-==================================================
-# 23. End-to-End Validation Strategy
-
-The system should be evaluated at three levels.
-
-## Level 1 — Detection
-
-Metrics:
-
-- IoU
-- Dice/F1
-- Precision
-- Recall
-- False-positive rate
-- False-negative rate
-
-## Level 2 — Physical / Temporal
-
-### Temporal
-
-- Area-change error
-- Centroid displacement error
-- Polygon overlap
-
-### Drift
-
-- Trajectory error
-- Displacement error
-- Source-region overlap
-- Ensemble spread
-
-## Level 3 — Investigation
-
-Where appropriate ground truth exists:
-
-- Top-1 candidate accuracy
-- Top-3 recall
-- Mean Reciprocal Rank
-- False-attribution rate
-- Correct no-attribution rate
+Result:
+Evidence conflict / investigate further
+```
 
 ---
 
-# 24. End-to-End Test Plan
+## 6.6 Uncertainty-Aware Attribution
 
-## Test A — Clear Spill
+The system does not force a vessel attribution when:
 
-Expected:
-
-- High detection
-- Low/medium look-alike risk
-- Good temporal consistency
-- Source hypotheses
-- Candidate ranking
-
-## Test B — Look-Alike
-
-Expected:
-
-- Detection uncertainty
-- High look-alike risk
-- No aggressive attribution
-
-## Test C — AIS Gap
-
-Expected:
-
-- AIS evidence unavailable
-- No assumption of vessel absence
-- Reduced evidence strength
-
-## Test D — AIS/Satellite Conflict
-
-Expected:
-
-- Cross-source inconsistency
-- No automatic spoofing accusation
-- Human investigation required
-
-## Test E — Multiple Plausible Sources
-
-Expected:
-
-- H1 → High
-- H2 → Medium
-- H3 → Low
-
-## Test F — Insufficient Data
-
-Expected:
-
-> INSUFFICIENT EVIDENCE
+* satellite data is insufficient
+* AIS data is missing
+* drift uncertainty is high
+* model confidence is low
+* ground truth is unavailable
 
 ---
 
-# 25. Technology Stack
+## 6.7 Evidence Provenance
+
+Every candidate result can be traced back to the observations and assumptions that produced it.
+
+---
+
+# 7. End-to-End Architecture
+
+```text
+                         ┌─────────────────────┐
+                         │   SATELLITE DATA    │
+                         │ Sentinel-1 SAR      │
+                         └──────────┬──────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │ SAR PREPROCESSING   │
+                         └──────────┬──────────┘
+                                    │
+                                    ▼
+                    ┌──────────────────────────────┐
+                    │ AI OIL-SPILL DETECTION       │
+                    │ + LOOK-ALIKE REJECTION      │
+                    └──────────────┬───────────────┘
+                                   │
+                                   ▼
+                    ┌──────────────────────────────┐
+                    │ SPILL GEOMETRY & QUANTIFICATION│
+                    └──────────────┬───────────────┘
+                                   │
+                                   ▼
+                    ┌──────────────────────────────┐
+                    │ TEMPORAL CHANGE ANALYSIS     │
+                    │ + SPILL EVOLUTION            │
+                    └──────────────┬───────────────┘
+                                   │
+                         ┌─────────┴─────────┐
+                         │                   │
+                         ▼                   ▼
+               ┌────────────────┐   ┌────────────────┐
+               │ ENVIRONMENTAL  │   │   AIS DATA     │
+               │ Wind / Current │   │ Vessel Tracks  │
+               └───────┬────────┘   └───────┬────────┘
+                       │                    │
+                       ▼                    ▼
+               ┌────────────────┐   ┌────────────────┐
+               │ DRIFT /        │   │ VESSEL         │
+               │ BACKTRACKING   │   │ CORRELATION    │
+               └───────┬────────┘   └───────┬────────┘
+                       │                    │
+                       └─────────┬──────────┘
+                                 ▼
+                    ┌──────────────────────────┐
+                    │ MULTI-SOURCE EVIDENCE    │
+                    │ FUSION                   │
+                    └────────────┬─────────────┘
+                                 │
+                                 ▼
+                    ┌──────────────────────────┐
+                    │ CANDIDATE VESSEL RANKING │
+                    └────────────┬─────────────┘
+                                 │
+                                 ▼
+                    ┌──────────────────────────┐
+                    │ EVIDENCE + UNCERTAINTY   │
+                    │ REPORT                   │
+                    └────────────┬─────────────┘
+                                 │
+                                 ▼
+                    ┌──────────────────────────┐
+                    │ HUMAN INVESTIGATOR       │
+                    └──────────────────────────┘
+```
+
+---
+
+# 8. Technology Stack
 
 ## Frontend
 
-- React
-- TypeScript
-- MapLibre GL / OpenLayers
-- Charting library
+* React
+* TypeScript
+* MapLibre GL / OpenLayers
+* Charting library
 
 ## Backend
 
-- Python
-- FastAPI
-- PostgreSQL
-- PostGIS
+* Python
+* FastAPI
+* PostgreSQL
+* PostGIS
 
 ## Machine Learning
 
-- PyTorch
-- U-Net / U-Net++
-- SegFormer if required
-- NumPy
-- OpenCV
+* PyTorch
+* U-Net / U-Net++
+* SegFormer if required
+* NumPy
+* OpenCV
 
 ## Geospatial
 
-- GDAL
-- rasterio
-- GeoPandas
-- Shapely
-- PostGIS
+* GDAL
+* rasterio
+* GeoPandas
+* Shapely
+* PostGIS
 
 ## Satellite
 
-- Sentinel-1
-- Sentinel-2 where useful
+* Sentinel-1 SAR
+* Copernicus data ecosystem
 
 ## Environmental
 
-- Copernicus
-- ECMWF
-- NOAA
+* ECMWF/Copernicus
+* NOAA
+* wind datasets
+* ocean-current datasets
+* wave data where available
 
 ## Drift
 
-- OpenDrift
-- Lagrangian particle modelling
+* OpenDrift
+* Lagrangian particle modelling
 
 ## AIS
 
-- Historical AIS datasets
-- Accessible AIS APIs/data sources where legally and technically appropriate
+* historical AIS dataset
+* accessible AIS source/API for prototype
 
 ## Deployment
 
-- Docker
-- Local/server deployment
+* Docker
+* local/server deployment
+* optional cloud deployment
 
 ---
 
-# 26. SIH Implementation Priority
+# 9. Validation Strategy
 
-## Priority 1 — MUST WORK
+Validation must occur at **three levels**.
 
-1. Sentinel-1 preprocessing
-2. Spill detection
-3. Look-alike analysis
-4. Spill characterization
-5. Multi-temporal analysis
-6. Environmental data integration
-7. Drift modelling
-8. Source hypotheses
-9. AIS correlation
-10. Evidence fusion
-11. Candidate ranking
-12. Evidence explanation
-13. Investigator dashboard
+## Level 1 — Component Validation
 
-## Priority 2 — STRONGLY DESIRABLE
+### Oil detection
 
-14. Cross-source inconsistency
-15. No-attribution outcome
-16. Dynamic ranking
-17. Historical replay
-18. Oil-Spill Time Machine
+Measure:
 
-## Priority 3 — IF TIME PERMITS
+* IoU
+* Dice/F1
+* precision
+* recall
 
-19. Evidence Graph UI
-20. Forensic Vessel Reconstruction
-21. Competing hypothesis visualization
-22. Forward forecasting
-23. Impact assessment
-24. Forecast correction
-25. Contextual vessel behaviour
+### Drift
+
+Measure:
+
+* trajectory error
+* predicted vs observed displacement
+* source-region overlap
+
+### AIS
+
+Measure:
+
+* candidate retrieval
+* trajectory matching
+* ranking quality
 
 ---
 
-# 27. Explicitly Out of SIH Scope
+# Level 2 — Feature Integration Validation
 
-Do not attempt to build:
+Test:
 
-- Global real-time AIS infrastructure
-- A new ocean circulation model
-- A new deep-learning drift model
-- A perfect AIS spoofing detector
-- Fully autonomous legal attribution
-- A huge historical attribution dataset
-- Fully calibrated causal attribution probability
-- Global operational satellite-processing infrastructure
+```text
+Detection
++
+Temporal analysis
++
+Drift
++
+AIS
+```
 
----
-
-# 28. Final PPT Feature Names
-
-Use these **8 major features** on the main feature slide:
-
-1. **AI Oil-Spill Detection & Look-Alike Analysis**
-2. **Multi-Temporal Spill Reconstruction & Characterization**
-3. **Environmental Drift & Backward Hindcasting → Source Hypotheses**
-4. **Historical AIS Vessel Reconstruction & Correlation**
-5. **Cross-Source Consistency & Evidence Conflict Detection**
-6. **Evidence Fusion & Dynamic Hypothesis Ranking**
-7. **Forensic Investigation Graph & Explainable Evidence Chain**
-8. **Forward Forecasting, Impact Assessment & Historical Replay**
+Check whether the outputs remain geographically and temporally consistent.
 
 ---
 
-# 29. Final Novelty Position
+# Level 3 — End-to-End Validation
 
-OilTrace AI should be presented as:
+Start with a known historical event.
 
-> **System-level innovation, not algorithmic novelty.**
+Run:
 
-The individual building blocks are established.
+```text
+Satellite
+→ Detection
+→ Temporal Reconstruction
+→ Drift
+→ Backtracking
+→ AIS
+→ Candidate Ranking
+```
 
-The proposed contribution is the investigation layer that connects them while explicitly handling:
+Then compare with independently documented information.
 
-- Multiple hypotheses
-- Supporting evidence
-- Contradictory evidence
-- Missing evidence
-- Data adequacy
-- Uncertainty
-- Human review
+### Metrics
 
-The central idea is:
+Where ground truth exists:
 
-> **Do not force incomplete maritime evidence into a single answer. Preserve competing explanations and show investigators why each candidate is or is not compatible with the available evidence.**
+* Top-1 candidate accuracy
+* Top-3 recall
+* Mean Reciprocal Rank
+* false attribution rate
+* source-region overlap
+* detection success
+
+### Additional metric
+
+Measure:
+
+> **Correct non-attribution**
+
+Meaning the system correctly refuses to identify a vessel when available evidence is insufficient.
 
 ---
 
-# 30. Core Principle
+# 10. Adversarial Threat Model
 
+The system must consider:
+
+## Threat 1 — AIS spoofing
+
+A vessel broadcasts a misleading position.
+
+### Response
+
+Compare AIS with:
+
+* satellite observations
+* trajectory history
+* environmental constraints
+
+Flag inconsistencies.
+
+---
+
+## Threat 2 — AIS shutdown
+
+Vessel stops transmitting.
+
+### Response
+
+Do not interpret missing AIS as evidence that the vessel was absent.
+
+---
+
+## Threat 3 — Satellite false positive
+
+SAR dark patch is not oil.
+
+### Response
+
+Use:
+
+* look-alike classification
+* contextual features
+* temporal evidence
+* environmental context
+
+---
+
+## Threat 4 — Incorrect drift assumption
+
+Environmental forcing is inaccurate.
+
+### Response
+
+Use:
+
+* uncertainty envelope
+* ensemble particles
+* multiple possible trajectories
+
+---
+
+## Threat 5 — Wrong vessel attribution
+
+System ranks the wrong vessel.
+
+### Response
+
+* candidate terminology
+* evidence provenance
+* contradictory evidence
+* human verification
+* correction/audit mechanism
+
+---
+
+# 11. Important Design Principle — No Single Source Is Truth
+
+```text
 Satellite ≠ Absolute Truth
+AIS       ≠ Absolute Truth
+Drift     ≠ Absolute Truth
+AI Score  ≠ Absolute Truth
+```
 
-AIS ≠ Absolute Truth
+Instead:
 
-Drift ≠ Absolute Truth
+```text
+Satellite Evidence
+        +
+Temporal Evidence
+        +
+Environmental Evidence
+        +
+AIS Evidence
+        +
+Data Quality
+        ↓
+Evidence Assessment
+```
 
-AI Score ≠ Guilt
-
-↓
-
-MULTI-SOURCE EVIDENCE
-
-↓
-
-SUPPORT + CONTRADICTION
-
-+
-
-DATA QUALITY
-
-+
-
-UNCERTAINTY
-
-+
-
-COMPETING HYPOTHESES
-
-↓
-
-HUMAN INVESTIGATION
-
-> **OilTrace AI does not accuse. It helps investigators investigate.**
+This is fundamental to the system.
 
 ---
 
-# 31. Final Feature Freeze
+# 12. What the System Must NOT Claim
 
-The final system contains **8 major features**:
+We should **not** claim:
 
-1. AI Oil-Spill Detection & Look-Alike Analysis
-2. Multi-Temporal Spill Reconstruction & Characterization
-3. Environmental Drift & Backward Hindcasting → Source Hypotheses
-4. Historical AIS Vessel Reconstruction & Correlation
-5. Cross-Source Consistency & Evidence Conflict Detection
-6. Evidence Fusion & Dynamic Hypothesis Ranking
-7. Forensic Investigation Graph & Explainable Evidence Chain
-8. Forward Forecasting, Impact Assessment & Historical Replay
+❌ "The AI identifies the guilty ship."
 
-**No additional major features should be added unless required by the SIH problem statement.**
+❌ "The system proves AIS spoofing."
+
+❌ "The system provides legally valid attribution."
+
+❌ "The model always distinguishes oil from every look-alike."
+
+❌ "The system predicts the exact spill origin."
+
+❌ "The system works perfectly with missing AIS."
+
+❌ "Our segmentation model is a new research breakthrough."
+
+❌ "Our drift model is novel."
+
+❌ "We have a large ground-truth dataset of confirmed responsible vessels" unless we actually obtain one.
+
+---
+
+# 13. Correct System Positioning
+
+## Wrong positioning
+
+> AI system that automatically identifies which ship caused an oil spill.
+
+## Correct positioning
+
+> **AI-assisted satellite intelligence system that detects oil spills, reconstructs their evolution, estimates probable source regions, correlates vessel activity, and presents evidence-backed candidate vessels for human investigation.**
+
+---
+
+# 14. SIH MVP Scope
+
+The hackathon version should focus on one convincing end-to-end pipeline.
+
+## MUST IMPLEMENT
+
+```text
+Sentinel-1 Image
+       ↓
+Oil-Spill Detection
+       ↓
+Spill Mask
+       ↓
+Spill Area
+       ↓
+Multi-Temporal Comparison
+       ↓
+Environmental Data
+       ↓
+Backtracking / Drift
+       ↓
+AIS Correlation
+       ↓
+Candidate Ranking
+       ↓
+Evidence Dashboard
+```
+
+## CAN BE SIMPLIFIED
+
+* environmental model
+* AIS anomaly detection
+* uncertainty estimation
+* audit mechanism
+
+These can initially use transparent rules rather than advanced research models.
+
+## SHOULD NOT BE ATTEMPTED FOR SIH
+
+* global real-time AIS infrastructure
+* new ocean circulation model
+* new deep-learning drift model
+* fully autonomous legal attribution
+* perfect AIS spoofing detection
+* production-scale satellite infrastructure
+
+---
+
+# 15. Recommended Demonstration Scenario
+
+## Step 1 — Spill Detection
+
+Load a Sentinel-1 scene.
+
+AI identifies a probable oil slick.
+
+---
+
+## Step 2 — Spill Quantification
+
+System displays:
+
+* spill polygon
+* approximate area
+* location
+* confidence
+
+---
+
+## Step 3 — Temporal Analysis
+
+Load previous and subsequent satellite observations.
+
+Show:
+
+```text
+T1 → 8 km²
+T2 → 14 km²
+T3 → 21 km²
+```
+
+---
+
+## Step 4 — Environmental Analysis
+
+Display:
+
+* wind direction
+* wind speed
+* current direction
+
+---
+
+## Step 5 — Backtracking
+
+Run particles backward from the observed slick.
+
+Generate:
+
+> Probable source region
+
+with uncertainty.
+
+---
+
+## Step 6 — AIS Correlation
+
+Find vessels that were:
+
+* geographically compatible
+* temporally compatible
+* trajectory-compatible
+
+---
+
+## Step 7 — Evidence Fusion
+
+Example:
+
+```text
+Candidate A
+
+Spatial compatibility       ✓
+Temporal compatibility      ✓
+Drift compatibility         ✓
+AIS trajectory              ✓
+Satellite consistency       ✓
+AIS data gap                ⚠
+
+Overall:
+STRONG EVIDENCE COMPATIBILITY
+```
+
+---
+
+## Step 8 — Investigator Review
+
+The investigator sees the complete evidence chain and decides whether to:
+
+* investigate
+* reject
+* mark uncertain
+
+---
+
+# 16. References
+
+## Oil-Spill Detection
+
+### Krestenitis et al. — Oil Spill Identification from Satellite Images Using Deep Neural Networks
+
+Remote Sensing, 2019.
+
+https://doi.org/10.3390/rs11151762
+
+Relevant to:
+
+* Sentinel-1 SAR
+* semantic segmentation
+* oil-spill detection
+* look-alikes
+* ships
+* land
+* sea
+
+---
+
+### Deep-Learning Framework for Oil-Spill Detection
+
+Relevant to:
+
+* SAR imagery
+* deep learning
+* segmentation
+* oil/look-alike classification
+
+https://pmc.ncbi.nlm.nih.gov/articles/PMC8036558/
+
+---
+
+# Oil-Spill Drift / Trajectory
+
+### Preliminary Assessment of an Oil-Spill Trajectory Model
+
+Relevant to:
+
+* wind forcing
+* ocean currents
+* trajectory modelling
+* validation
+
+https://doi.org/10.1016/j.envsoft.2004.04.025
+
+---
+
+### Impact of Currents, Waves and Wind in Modelling Surface Drifters and Oil Spill
+
+Relevant to:
+
+* currents
+* wind
+* waves
+* Stokes drift
+* trajectory uncertainty
+
+https://doi.org/10.1016/j.dsr2.2016.04.002
+
+---
+
+### Oil-Spill Modelling with OpenDrift
+
+Relevant to:
+
+* OpenDrift
+* wind
+* currents
+* waves
+* oil-spill trajectory modelling
+
+https://doi.org/10.1016/j.marpolbul.2023.115497
+
+---
+
+# Oil-Spill Backtracking
+
+### Prediction and (Back)tracking of Marine Oil Spill Drift and Diffusion
+
+Relevant to:
+
+* prediction
+* backtracking
+* source estimation
+* trajectory modelling
+* current research
+
+https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2024.1427604/full
+
+---
+
+# Recent Dataset Context
+
+### Earth System Science Data — Oil Slick / Look-Alike Dataset
+
+Relevant to:
+
+* Sentinel-1
+* oil slicks
+* look-alikes
+* dataset limitations
+* benchmark development
+
+https://doi.org/10.5194/essd-17-6807-2025
+
+---
+
+# 17. Final Feature Summary
+
+|  # | Feature                          | Classification         | Importance     | MVP |
+| -: | -------------------------------- | ---------------------- | -------------- | :-: |
+| 01 | Multi-source satellite ingestion | Baseline / Existing    | 🔴 Critical    |  ✅  |
+| 02 | AI oil-spill segmentation        | Baseline / Existing    | 🔴 Critical    |  ✅  |
+| 03 | Look-alike rejection             | Baseline / Improvement | 🔴 Critical    |  ✅  |
+| 04 | Spill geometry & quantification  | Baseline               | 🟠 High        |  ✅  |
+| 05 | Temporal satellite analysis      | Improvement            | 🔴 Critical    |  ✅  |
+| 06 | Spill evolution reconstruction   | Improvement            | 🟠 High        |  ✅  |
+| 07 | Environmental context            | Existing               | 🟠 High        |  ✅  |
+| 08 | Drift simulation                 | Existing               | 🔴 Critical    |  ✅  |
+| 09 | Source backtracking              | Improvement            | 🔴 Critical    |  ✅  |
+| 10 | AIS vessel correlation           | Existing               | 🔴 Critical    |  ✅  |
+| 11 | Vessel behaviour analysis        | Existing / Improvement | 🟡 Medium-High |  ⚠️ |
+| 12 | AIS–satellite inconsistency      | Proposed               | 🟠 High        |  ✅  |
+| 13 | Multi-source evidence fusion     | Proposed               | 🔴 Critical    |  ✅  |
+| 14 | Evidence provenance              | Proposed               | 🔴 Critical    |  ✅  |
+| 15 | Confidence vs data adequacy      | Proposed               | 🔴 Critical    |  ⚠️ |
+| 16 | Candidate vessel ranking         | Proposed               | 🔴 Critical    |  ✅  |
+| 17 | Human-in-the-loop                | Responsible deployment | 🔴 Critical    |  ✅  |
+| 18 | Correction / audit mechanism     | Proposed               | 🟠 High        |  ⚠️ |
+| 19 | Missing/adversarial AIS handling | Improvement / Proposed | 🟠 High        |  ⚠️ |
+| 20 | Historical incident replay       | Validation             | 🔴 Critical    |  ✅  |
+| 21 | Historical ground-truth dataset  | Validation             | 🔴 Critical    |  ✅  |
+| 22 | Investigator dashboard           | Integration            | 🔴 Critical    |  ✅  |
+
+---
+
+# 18. Final Honest Assessment
+
+The project is strongest when described as a **system-level integration problem**, not as a collection of novel AI algorithms.
+
+### Established
+
+* Satellite oil-spill detection
+* SAR segmentation
+* Look-alike detection
+* AIS tracking
+* Vessel anomaly analysis
+* Oil-spill drift modelling
+* Backtracking
+* Geospatial visualization
+
+### Improved
+
+* Temporal spill reconstruction
+* Source-oriented investigation
+* Cross-source consistency checking
+* Uncertainty reporting
+* Missing-AIS handling
+
+### Proposed differentiation
+
+* Satellite-first investigation workflow
+* Multi-source evidence fusion
+* Contradiction-aware evidence
+* Evidence provenance
+* Candidate ranking rather than automatic accusation
+* Human-verifiable investigation workflow
+
+### Core claim
+
+> **We are not claiming to have invented each component. We are proposing an integrated, satellite-first investigation pipeline that turns separate observations — satellite imagery, temporal change, environmental drift and vessel activity — into a transparent evidence assessment for human investigators.**
+
+That is the claim we should defend in the SIH presentation.
