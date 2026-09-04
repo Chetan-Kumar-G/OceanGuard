@@ -15,6 +15,7 @@ interface Props {
 const HORIZON_CHOICES = [6, 12, 24, 48, 72, 96];
 
 export default function ForecastPanel({ forecast, impact, replay, selectedHorizon, onSelectHorizon, onRun, busy }: Props) {
+  const [showControls, setShowControls] = useState(false);
   const [horizons, setHorizons] = useState<number[]>([12, 24, 48, 72]);
   const [nEnsemble, setNEnsemble] = useState(16);
   const [nParticles, setNParticles] = useState(200);
@@ -35,43 +36,50 @@ export default function ForecastPanel({ forecast, impact, replay, selectedHorizo
 
   return (
     <section className="panel-card">
-      <h3>F8 forward forecast</h3>
+      <div className="panel-card-header">
+        <h3>F8 forward forecast</h3>
+        <button className="link-button" onClick={() => setShowControls((v) => !v)}>
+          {showControls ? "Hide controls" : "⚙ Customize"}
+        </button>
+      </div>
 
-      <div className="forecaster-controls">
-        <div className="forecaster-row">
-          <span className="muted small">Horizons (h)</span>
-          <div className="chip-row">
-            {HORIZON_CHOICES.map((h) => (
-              <label key={h} className={`chip ${horizons.includes(h) ? "chip-on" : ""}`}>
-                <input type="checkbox" checked={horizons.includes(h)} onChange={() => toggleHorizon(h)} />
-                {h}
-              </label>
-            ))}
+      {showControls && (
+        <div className="forecaster-controls">
+          <div className="forecaster-row">
+            <span className="muted small">Horizons (h)</span>
+            <div className="chip-row">
+              {HORIZON_CHOICES.map((h) => (
+                <label key={h} className={`chip ${horizons.includes(h) ? "chip-on" : ""}`}>
+                  <input type="checkbox" checked={horizons.includes(h)} onChange={() => toggleHorizon(h)} />
+                  {h}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div className="forecaster-row">
+            <label className="inline-field">
+              Ensemble
+              <input type="number" min={4} max={80} value={nEnsemble} onChange={(e) => setNEnsemble(Number(e.target.value))} />
+            </label>
+            <label className="inline-field">
+              Particles
+              <input type="number" min={20} max={2000} step={20} value={nParticles} onChange={(e) => setNParticles(Number(e.target.value))} />
+            </label>
+            <label className="inline-field">
+              Seed
+              <input type="number" value={seed} onChange={(e) => setSeed(Number(e.target.value))} />
+            </label>
+          </div>
+          <div className="horizon-buttons">
+            <button onClick={() => run(false)} disabled={busy || horizons.length === 0}>
+              {busy ? "Running…" : "Run forecaster"}
+            </button>
+            <button onClick={() => run(true)} disabled={busy || horizons.length === 0}>
+              Run + replay validation
+            </button>
           </div>
         </div>
-        <div className="forecaster-row">
-          <label className="inline-field">
-            Ensemble
-            <input type="number" min={4} max={80} value={nEnsemble} onChange={(e) => setNEnsemble(Number(e.target.value))} />
-          </label>
-          <label className="inline-field">
-            Particles
-            <input type="number" min={20} max={2000} step={20} value={nParticles} onChange={(e) => setNParticles(Number(e.target.value))} />
-          </label>
-          <label className="inline-field">
-            Seed
-            <input type="number" value={seed} onChange={(e) => setSeed(Number(e.target.value))} />
-          </label>
-        </div>
-        <div className="horizon-buttons">
-          <button onClick={() => run(false)} disabled={busy || horizons.length === 0}>
-            {busy ? "Running…" : "Run forecaster"}
-          </button>
-          <button onClick={() => run(true)} disabled={busy || horizons.length === 0}>
-            Run + replay validation
-          </button>
-        </div>
-      </div>
+      )}
 
       {activeHorizons.length === 0 ? (
         <p className="muted">Not yet computed.</p>

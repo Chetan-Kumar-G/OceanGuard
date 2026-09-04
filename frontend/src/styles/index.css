@@ -33,7 +33,7 @@ body {
 .app {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 .app-header {
@@ -85,36 +85,36 @@ body {
   font-size: 13px;
 }
 
-.pipeline-status {
-  display: flex;
-  gap: 12px;
-  margin-left: auto;
-  flex-wrap: wrap;
-}
-
-.stage {
-  display: flex;
+.pipeline-status-compact {
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
+  margin-left: auto;
   font-size: 11px;
   color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 3px 9px;
+  cursor: default;
 }
 
 .stage-icon {
   font-size: 10px;
 }
 
-.stage-done .stage-icon {
+.pipeline-status-compact.stage-done {
   color: var(--ok);
+  border-color: rgba(79, 209, 139, 0.35);
 }
 
-.stage-loading .stage-icon {
+.pipeline-status-compact.stage-loading .stage-icon {
   color: var(--accent);
   animation: pulse 1s infinite;
 }
 
-.stage-error .stage-icon {
+.pipeline-status-compact.stage-error {
   color: var(--danger);
+  border-color: rgba(255, 92, 92, 0.4);
 }
 
 @keyframes pulse {
@@ -125,18 +125,21 @@ body {
 
 .disclaimer {
   margin: 0;
-  padding: 6px 20px;
+  padding: 4px 20px;
   font-size: 11px;
   color: var(--muted);
   background: #1a1500;
   border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .layout {
   flex: 1;
   display: grid;
   grid-template-columns: 1fr 360px;
-  min-height: 0;
+  min-height: 440px;
 }
 
 .map-pane {
@@ -187,6 +190,43 @@ body {
   margin: 14px 0 6px;
   font-size: 12px;
   color: var(--muted);
+}
+
+.panel-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.panel-card-header h3 {
+  margin: 0;
+}
+
+.side-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.side-tabs button {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 6px 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.side-tabs button.active {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
 }
 
 .kv {
@@ -779,7 +819,7 @@ body {
 .tp-image-frame {
   position: relative;
   width: 100%;
-  max-height: 380px;
+  max-height: 260px;
   display: flex;
   justify-content: center;
   background: #000;
@@ -789,7 +829,7 @@ body {
 }
 
 .tp-base-image {
-  max-height: 380px;
+  max-height: 260px;
   width: auto;
   max-width: 100%;
   object-fit: contain;

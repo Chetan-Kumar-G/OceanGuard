@@ -4,7 +4,6 @@ import EventSelector from "../components/EventSelector";
 import PipelineStatus from "../components/PipelineStatus";
 import MapView from "../components/MapView";
 import SidePanel from "../components/SidePanel";
-import Timeline from "../components/Timeline";
 import ForecastPanel from "../components/ForecastPanel";
 import GraphExplorer from "../components/GraphExplorer";
 import TimelinePlayer from "../components/TimelinePlayer";
@@ -22,6 +21,7 @@ export default function DashboardPage() {
   const [selectedHorizon, setSelectedHorizon] = useState<number | null>(null);
   const [layers, setLayers] = useState<LayerVisibility>(DEFAULT_LAYERS);
   const [stepIndex, setStepIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState<"evidence" | "forecast" | "graph">("evidence");
   const isLoading = Object.values(state.status).some((s) => s === "loading");
 
   // Reset the playback position whenever a new event finishes loading.
@@ -56,6 +56,7 @@ export default function DashboardPage() {
     setSelectedMmsi(null);
     setSelectedHorizon(null);
     setStepIndex(0);
+    setActiveTab("evidence");
     void load(eventId);
   }
 
@@ -87,10 +88,8 @@ export default function DashboardPage() {
         </span>
       </header>
 
-      <p className="disclaimer">
-        Candidate vessels are evidence-based associations for investigation, not confirmed legal responsibility. See{" "}
-        <em>Technical Boundaries</em> in the project specification. Someone disputing a flag can{" "}
-        <Link to="/appeal">submit a dispute</Link> without an account.
+      <p className="disclaimer" title="Candidate vessels are evidence-based associations for investigation, not confirmed legal responsibility. See Technical Boundaries in the project specification.">
+        Candidates are evidence-based associations, not confirmed responsibility. <Link to="/appeal">Dispute a flag</Link> — no account needed.
       </p>
 
       {state.eventId && observedStates.length > 0 && (
@@ -130,26 +129,41 @@ export default function DashboardPage() {
         </div>
 
         <div className="side-col">
-          <Timeline states={state.temporal?.states ?? []} />
-          <SidePanel
-            temporal={state.temporal}
-            candidates={state.candidates}
-            ranking={state.ranking}
-            evidence={state.evidence}
-            evidenceSummary={state.evidenceSummary}
-            selectedMmsi={selectedMmsi}
-            onSelectVessel={setSelectedMmsi}
-          />
-          <ForecastPanel
-            forecast={state.forecast}
-            impact={state.impact}
-            replay={state.replay}
-            selectedHorizon={selectedHorizon}
-            onSelectHorizon={setSelectedHorizon}
-            onRun={(params, options) => void rerunForecast(params, options)}
-            busy={state.status.f8 === "loading"}
-          />
-          <GraphExplorer graph={state.graph} eventId={state.eventId} selectedMmsi={selectedMmsi} />
+          <div className="side-tabs">
+            <button className={activeTab === "evidence" ? "active" : ""} onClick={() => setActiveTab("evidence")}>
+              Evidence
+            </button>
+            <button className={activeTab === "forecast" ? "active" : ""} onClick={() => setActiveTab("forecast")}>
+              Forecast
+            </button>
+            <button className={activeTab === "graph" ? "active" : ""} onClick={() => setActiveTab("graph")}>
+              Graph
+            </button>
+          </div>
+
+          {activeTab === "evidence" && (
+            <SidePanel
+              temporal={state.temporal}
+              candidates={state.candidates}
+              ranking={state.ranking}
+              evidence={state.evidence}
+              evidenceSummary={state.evidenceSummary}
+              selectedMmsi={selectedMmsi}
+              onSelectVessel={setSelectedMmsi}
+            />
+          )}
+          {activeTab === "forecast" && (
+            <ForecastPanel
+              forecast={state.forecast}
+              impact={state.impact}
+              replay={state.replay}
+              selectedHorizon={selectedHorizon}
+              onSelectHorizon={setSelectedHorizon}
+              onRun={(params, options) => void rerunForecast(params, options)}
+              busy={state.status.f8 === "loading"}
+            />
+          )}
+          {activeTab === "graph" && <GraphExplorer graph={state.graph} eventId={state.eventId} selectedMmsi={selectedMmsi} />}
         </div>
       </main>
     </div>

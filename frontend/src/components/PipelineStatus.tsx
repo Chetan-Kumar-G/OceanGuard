@@ -10,31 +10,29 @@ const LABELS: Record<StageKey, string> = {
   f8: "F8 Forecast",
 };
 
-const ICON: Record<StageStatus, string> = {
-  idle: "○",
-  loading: "◐",
-  done: "●",
-  error: "✕",
-};
+const STAGE_KEYS = Object.keys(LABELS) as StageKey[];
 
 interface Props {
   status: Record<StageKey, StageStatus>;
   errors: Partial<Record<StageKey, string>>;
 }
 
+/** One compact badge instead of seven labeled dots - hover for the per-stage
+ * breakdown (native title tooltip, no extra UI). */
 export default function PipelineStatus({ status, errors }: Props) {
+  const done = STAGE_KEYS.filter((k) => status[k] === "done").length;
+  const errored = STAGE_KEYS.filter((k) => status[k] === "error");
+  const loading = STAGE_KEYS.some((k) => status[k] === "loading");
+
+  const tooltip = STAGE_KEYS.map((k) => `${LABELS[k]}: ${status[k]}${errors[k] ? ` (${errors[k]})` : ""}`).join("\n");
+
+  const icon = errored.length > 0 ? "✕" : loading ? "◐" : done === STAGE_KEYS.length ? "●" : "○";
+  const cls = errored.length > 0 ? "stage-error" : loading ? "stage-loading" : done === STAGE_KEYS.length ? "stage-done" : "";
+
   return (
-    <div className="pipeline-status" role="status">
-      {(Object.keys(LABELS) as StageKey[]).map((key) => (
-        <span
-          key={key}
-          className={`stage stage-${status[key]}`}
-          title={errors[key] ? `${LABELS[key]}: ${errors[key]}` : LABELS[key]}
-        >
-          <span className="stage-icon">{ICON[status[key]]}</span>
-          {LABELS[key]}
-        </span>
-      ))}
-    </div>
+    <span className={`pipeline-status-compact ${cls}`} role="status" title={tooltip}>
+      <span className="stage-icon">{icon}</span>
+      {errored.length > 0 ? `${errored.length} stage${errored.length > 1 ? "s" : ""} failed` : `${done}/${STAGE_KEYS.length} ready`}
+    </span>
   );
 }
