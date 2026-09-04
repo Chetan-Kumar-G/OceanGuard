@@ -1,6 +1,9 @@
+import { useState } from "react";
+import { ApiError, downloadVesselReportPdf } from "../api/client";
 import type { CandidateVessel, EvidenceRelation, EvidenceSummary, RankingResult, TemporalProgressionResult } from "../api/types";
 
 interface Props {
+  eventId: string | null;
   temporal: TemporalProgressionResult | null;
   candidates: CandidateVessel[];
   ranking: RankingResult | null;
@@ -15,6 +18,7 @@ function bandClass(band: string) {
 }
 
 export default function SidePanel({
+  eventId,
   temporal,
   candidates,
   ranking,
@@ -23,6 +27,22 @@ export default function SidePanel({
   selectedMmsi,
   onSelectVessel,
 }: Props) {
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
+  async function onDownloadReport() {
+    if (!eventId) return;
+    setDownloading(true);
+    setDownloadError(null);
+    try {
+      await downloadVesselReportPdf(eventId);
+    } catch (err) {
+      setDownloadError(err instanceof ApiError ? `Could not generate the report (HTTP ${err.status}).` : "Could not reach the server.");
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   const latestObserved = temporal?.states.filter((s) => s.state_type === "OBSERVED").at(-1);
   const candidateByMmsi = new Map(candidates.map((c) => [c.mmsi, c]));
   const evidenceForSelected = selectedMmsi
@@ -59,7 +79,15 @@ export default function SidePanel({
       </section>
 
       <section className="panel-card">
-        <h3>Candidate vessels (F6 ranking)</h3>
+        <div className="panel-card-header">
+          <h3>Candidate vessels (F6 ranking)</h3>
+          {ranking && ranking.candidates.length > 0 && (
+            <button className="link-button" onClick={onDownloadReport} disabled={downloading}>
+              {downloading ? "Generating…" : "📄 PDF report"}
+            </button>
+          )}
+        </div>
+        {downloadError && <p className="flag flag-warn small">{downloadError}</p>}
         {!ranking && <p className="muted">Not yet computed.</p>}
         {ranking?.event_insufficient_evidence && (
           <p className="flag flag-warn">

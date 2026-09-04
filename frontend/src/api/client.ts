@@ -153,3 +153,29 @@ export const reviewAppeal = (appealId: string, status: AppealStatus, notes?: str
 // ---------------------------------------------------------------- media
 export const quicklookUrl = (sceneId: string) => `${BASE}/media/quicklook/${sceneId}.png`;
 export const maskUrl = (sceneId: string) => `${BASE}/media/masks/${sceneId}.png`;
+
+// ---------------------------------------------------------------- reports
+/**
+ * Downloads the candidate-vessel PDF report and saves it via the browser.
+ * A plain <a href> can't carry the Authorization header the endpoint
+ * requires, so this fetches the PDF as a blob and triggers the save through
+ * a throwaway object URL instead.
+ */
+export async function downloadVesselReportPdf(eventId: string): Promise<void> {
+  const headers: Record<string, string> = {};
+  if (_authToken) headers.Authorization = `Bearer ${_authToken}`;
+  const res = await fetch(`${BASE}/api/v1/reports/${eventId}/vessels.pdf`, { headers });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new ApiError(res.status, `/api/v1/reports/${eventId}/vessels.pdf`, body);
+  }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `oiltrace-${eventId}-vessel-report.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}

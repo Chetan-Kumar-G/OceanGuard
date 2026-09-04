@@ -534,6 +534,12 @@ body {
   cursor: pointer;
   padding: 0;
   text-align: left;
+  white-space: nowrap;
+}
+
+.link-button:disabled {
+  color: var(--muted);
+  cursor: default;
 }
 
 .auth-loading {

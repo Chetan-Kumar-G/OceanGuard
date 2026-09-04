@@ -143,6 +143,7 @@ export default function DashboardPage() {
 
           {activeTab === "evidence" && (
             <SidePanel
+              eventId={state.eventId}
               temporal={state.temporal}
               candidates={state.candidates}
               ranking={state.ranking}
