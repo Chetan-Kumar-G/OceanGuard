@@ -152,3 +152,4 @@ export const reviewAppeal = (appealId: string, status: AppealStatus, notes?: str
 
 // ---------------------------------------------------------------- media
 export const quicklookUrl = (sceneId: string) => `${BASE}/media/quicklook/${sceneId}.png`;
+export const maskUrl = (sceneId: string) => `${BASE}/media/masks/${sceneId}.png`;

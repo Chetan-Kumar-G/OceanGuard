@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import EventSelector from "../components/EventSelector";
 import PipelineStatus from "../components/PipelineStatus";
@@ -7,8 +7,8 @@ import SidePanel from "../components/SidePanel";
 import Timeline from "../components/Timeline";
 import ForecastPanel from "../components/ForecastPanel";
 import GraphExplorer from "../components/GraphExplorer";
-import LayerToggles, { DEFAULT_LAYERS, type LayerVisibility } from "../components/LayerToggles";
-import SatelliteThumbnails from "../components/SatelliteThumbnails";
+import TimelinePlayer from "../components/TimelinePlayer";
+import { DEFAULT_LAYERS, type LayerVisibility } from "../components/LayerToggles";
 import { useEventPipeline } from "../hooks/useEventPipeline";
 import { useAuth } from "../auth/AuthContext";
 
@@ -21,12 +21,31 @@ export default function DashboardPage() {
   const [selectedMmsi, setSelectedMmsi] = useState<string | null>(null);
   const [selectedHorizon, setSelectedHorizon] = useState<number | null>(null);
   const [layers, setLayers] = useState<LayerVisibility>(DEFAULT_LAYERS);
+  const [stepIndex, setStepIndex] = useState(0);
   const isLoading = Object.values(state.status).some((s) => s === "loading");
 
+  // Reset the playback position whenever a new event finishes loading.
+  useEffect(() => {
+    setStepIndex(0);
+  }, [state.eventId, state.temporal]);
+
+  const observedStates = useMemo(
+    () =>
+      (state.temporal?.states ?? [])
+        .filter((s) => s.state_type === "OBSERVED")
+        .sort((a, b) => a.timestamp.localeCompare(b.timestamp)),
+    [state.temporal],
+  );
+
+  // The map shows the story "as of" the current playback step - only the
+  // satellite passes revealed so far, so the polygon visibly grows/shifts
+  // as you step or play through.
+  const revealedStates = useMemo(() => observedStates.slice(0, stepIndex + 1), [observedStates, stepIndex]);
+
   const center = useMemo<[number, number]>(() => {
-    const latest = state.temporal?.states.filter((s) => s.state_type === "OBSERVED").at(-1);
+    const latest = revealedStates.at(-1);
     return latest ? [latest.centroid_lon, latest.centroid_lat] : DEFAULT_CENTER;
-  }, [state.temporal]);
+  }, [revealedStates]);
 
   const forecastRun = useMemo(
     () => state.forecast.find((r) => r.forecast_horizon_hours === selectedHorizon) ?? null,
@@ -36,7 +55,13 @@ export default function DashboardPage() {
   function handleSelectEvent(eventId: string) {
     setSelectedMmsi(null);
     setSelectedHorizon(null);
+    setStepIndex(0);
     void load(eventId);
+  }
+
+  function enableForecast() {
+    const horizons = [...new Set(state.forecast.map((r) => r.forecast_horizon_hours))].sort((a, b) => a - b);
+    if (horizons.length > 0) setSelectedHorizon(horizons[0]);
   }
 
   return (
@@ -68,25 +93,35 @@ export default function DashboardPage() {
         <Link to="/appeal">submit a dispute</Link> without an account.
       </p>
 
+      {state.eventId && observedStates.length > 0 && (
+        <div className="player-row">
+          <TimelinePlayer
+            eventId={state.eventId}
+            states={state.temporal?.states ?? []}
+            stepIndex={stepIndex}
+            onStepChange={setStepIndex}
+            layers={layers}
+            onLayersChange={setLayers}
+            hasForecast={state.forecast.length > 0}
+            onEnableForecast={enableForecast}
+          />
+        </div>
+      )}
+
       <main className="layout">
         <div className="map-pane">
           {state.eventId ? (
-            <>
-              <MapView
-                center={center}
-                states={state.temporal?.states ?? []}
-                hypotheses={state.hypotheses}
-                candidates={state.candidates}
-                ranking={state.ranking}
-                forecastRun={forecastRun}
-                selectedMmsi={selectedMmsi}
-                onSelectVessel={setSelectedMmsi}
-                layers={layers}
-              />
-              <div className="map-overlay-controls">
-                <LayerToggles value={layers} onChange={setLayers} />
-              </div>
-            </>
+            <MapView
+              center={center}
+              states={revealedStates}
+              hypotheses={state.hypotheses}
+              candidates={state.candidates}
+              ranking={state.ranking}
+              forecastRun={forecastRun}
+              selectedMmsi={selectedMmsi}
+              onSelectVessel={setSelectedMmsi}
+              layers={layers}
+            />
           ) : (
             <div className="map-placeholder">
               <p>Select an event above to load its investigation.</p>
@@ -95,7 +130,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="side-col">
-          <SatelliteThumbnails states={state.temporal?.states ?? []} />
           <Timeline states={state.temporal?.states ?? []} />
           <SidePanel
             temporal={state.temporal}

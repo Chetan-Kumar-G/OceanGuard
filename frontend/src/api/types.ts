@@ -46,6 +46,8 @@ export interface TemporalSpillState {
   is_observed: boolean;
   f1_confidence?: number;
   data_quality?: string;
+  area_change_pct?: number | null;
+  centroid_displacement_km?: number | null;
 }
 
 export interface TemporalProgressionResult {
