@@ -31,6 +31,11 @@ pnpm-debug.log*
 coverage/
 .nyc_output/
 .pytest_cache/
+.coverage
+
+# OilTrace backend runtime artifacts
+*.sqlite
+*.sqlite3
 
 # Editor / IDE
 .vscode/
