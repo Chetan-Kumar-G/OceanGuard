@@ -205,7 +205,14 @@ export default function MapView({
       forceUpdate();
     });
 
+    // The container can change size without the window resizing - e.g. it's
+    // moved into/out of a floating DockableWindow - so MapLibre needs an
+    // explicit nudge or it keeps rendering at its old canvas size.
+    const resizeObserver = new ResizeObserver(() => map.resize());
+    resizeObserver.observe(containerRef.current);
+
     return () => {
+      resizeObserver.disconnect();
       map.remove();
       mapRef.current = null;
       loadedRef.current = false;

@@ -7,12 +7,21 @@ import SidePanel from "../components/SidePanel";
 import ForecastPanel from "../components/ForecastPanel";
 import GraphExplorer from "../components/GraphExplorer";
 import TimelinePlayer from "../components/TimelinePlayer";
+import DockableWindow from "../components/DockableWindow";
 import { DEFAULT_LAYERS, type LayerVisibility } from "../components/LayerToggles";
 import { useEventPipeline } from "../hooks/useEventPipeline";
+import { usePdfReportDownload } from "../hooks/usePdfReportDownload";
 import { useAuth } from "../auth/AuthContext";
 
 // AOI centre from the bundled synthetic dataset's config.used.yaml (aoi.ref_lat/ref_lon).
 const DEFAULT_CENTER: [number, number] = [18.0, 35.0];
+
+type SidePanelId = "evidence" | "forecast" | "graph";
+const SIDE_PANELS: { id: SidePanelId; label: string }[] = [
+  { id: "evidence", label: "Evidence" },
+  { id: "forecast", label: "Forecast" },
+  { id: "graph", label: "Graph" },
+];
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
@@ -21,8 +30,10 @@ export default function DashboardPage() {
   const [selectedHorizon, setSelectedHorizon] = useState<number | null>(null);
   const [layers, setLayers] = useState<LayerVisibility>(DEFAULT_LAYERS);
   const [stepIndex, setStepIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState<"evidence" | "forecast" | "graph">("evidence");
+  const [activeTab, setActiveTab] = useState<SidePanelId>("evidence");
+  const [detachedPanels, setDetachedPanels] = useState<Set<SidePanelId>>(new Set());
   const isLoading = Object.values(state.status).some((s) => s === "loading");
+  const report = usePdfReportDownload(state.eventId);
 
   // Reset the playback position whenever a new event finishes loading.
   useEffect(() => {
@@ -57,6 +68,7 @@ export default function DashboardPage() {
     setSelectedHorizon(null);
     setStepIndex(0);
     setActiveTab("evidence");
+    setDetachedPanels(new Set());
     void load(eventId);
   }
 
@@ -64,6 +76,53 @@ export default function DashboardPage() {
     const horizons = [...new Set(state.forecast.map((r) => r.forecast_horizon_hours))].sort((a, b) => a - b);
     if (horizons.length > 0) setSelectedHorizon(horizons[0]);
   }
+
+  function setPanelDetached(id: SidePanelId, next: boolean) {
+    setDetachedPanels((prev) => {
+      const copy = new Set(prev);
+      if (next) copy.add(id);
+      else copy.delete(id);
+      return copy;
+    });
+    if (next && activeTab === id) {
+      const remaining = SIDE_PANELS.map((p) => p.id).filter((p) => p !== id && !detachedPanels.has(p));
+      if (remaining.length > 0) setActiveTab(remaining[0]);
+    }
+  }
+
+  function panelContent(id: SidePanelId) {
+    switch (id) {
+      case "evidence":
+        return (
+          <SidePanel
+            eventId={state.eventId}
+            temporal={state.temporal}
+            candidates={state.candidates}
+            ranking={state.ranking}
+            evidence={state.evidence}
+            evidenceSummary={state.evidenceSummary}
+            selectedMmsi={selectedMmsi}
+            onSelectVessel={setSelectedMmsi}
+          />
+        );
+      case "forecast":
+        return (
+          <ForecastPanel
+            forecast={state.forecast}
+            impact={state.impact}
+            replay={state.replay}
+            selectedHorizon={selectedHorizon}
+            onSelectHorizon={setSelectedHorizon}
+            onRun={(params, options) => void rerunForecast(params, options)}
+            busy={state.status.f8 === "loading"}
+          />
+        );
+      case "graph":
+        return <GraphExplorer graph={state.graph} eventId={state.eventId} selectedMmsi={selectedMmsi} />;
+    }
+  }
+
+  const attachedTabs = SIDE_PANELS.filter((p) => !detachedPanels.has(p.id));
 
   return (
     <div className="app">
@@ -77,6 +136,11 @@ export default function DashboardPage() {
         </div>
         <EventSelector value={state.eventId} onChange={handleSelectEvent} disabled={isLoading} />
         {state.eventId && <PipelineStatus status={state.status} errors={state.errors} />}
+        {state.eventId && state.ranking && state.ranking.candidates.length > 0 && (
+          <button className="link-button header-pdf-button" onClick={() => void report.download()} disabled={report.downloading}>
+            {report.downloading ? "Generating…" : "📄 PDF report"}
+          </button>
+        )}
         <nav className="top-nav">
           <Link to="/review">Appeals</Link>
         </nav>
@@ -87,6 +151,7 @@ export default function DashboardPage() {
           </button>
         </span>
       </header>
+      {report.error && <p className="flag flag-warn header-pdf-error">{report.error}</p>}
 
       <p className="disclaimer" title="Candidate vessels are evidence-based associations for investigation, not confirmed legal responsibility. See Technical Boundaries in the project specification.">
         Candidates are evidence-based associations, not confirmed responsibility. <Link to="/appeal">Dispute a flag</Link> — no account needed.
@@ -94,33 +159,37 @@ export default function DashboardPage() {
 
       {state.eventId && observedStates.length > 0 && (
         <div className="player-row">
-          <TimelinePlayer
-            eventId={state.eventId}
-            states={state.temporal?.states ?? []}
-            stepIndex={stepIndex}
-            onStepChange={setStepIndex}
-            layers={layers}
-            onLayersChange={setLayers}
-            hasForecast={state.forecast.length > 0}
-            onEnableForecast={enableForecast}
-          />
+          <DockableWindow title="Investigation playback" floatingSize={{ width: 520, height: 560 }}>
+            <TimelinePlayer
+              eventId={state.eventId}
+              states={state.temporal?.states ?? []}
+              stepIndex={stepIndex}
+              onStepChange={setStepIndex}
+              layers={layers}
+              onLayersChange={setLayers}
+              hasForecast={state.forecast.length > 0}
+              onEnableForecast={enableForecast}
+            />
+          </DockableWindow>
         </div>
       )}
 
       <main className="layout">
         <div className="map-pane">
           {state.eventId ? (
-            <MapView
-              center={center}
-              states={revealedStates}
-              hypotheses={state.hypotheses}
-              candidates={state.candidates}
-              ranking={state.ranking}
-              forecastRun={forecastRun}
-              selectedMmsi={selectedMmsi}
-              onSelectVessel={setSelectedMmsi}
-              layers={layers}
-            />
+            <DockableWindow title="Map" className="map-dock" floatingSize={{ width: 640, height: 520 }}>
+              <MapView
+                center={center}
+                states={revealedStates}
+                hypotheses={state.hypotheses}
+                candidates={state.candidates}
+                ranking={state.ranking}
+                forecastRun={forecastRun}
+                selectedMmsi={selectedMmsi}
+                onSelectVessel={setSelectedMmsi}
+                layers={layers}
+              />
+            </DockableWindow>
           ) : (
             <div className="map-placeholder">
               <p>Select an event above to load its investigation.</p>
@@ -129,42 +198,31 @@ export default function DashboardPage() {
         </div>
 
         <div className="side-col">
-          <div className="side-tabs">
-            <button className={activeTab === "evidence" ? "active" : ""} onClick={() => setActiveTab("evidence")}>
-              Evidence
-            </button>
-            <button className={activeTab === "forecast" ? "active" : ""} onClick={() => setActiveTab("forecast")}>
-              Forecast
-            </button>
-            <button className={activeTab === "graph" ? "active" : ""} onClick={() => setActiveTab("graph")}>
-              Graph
-            </button>
-          </div>
+          {attachedTabs.length > 1 && (
+            <div className="side-tabs">
+              {attachedTabs.map((p) => (
+                <button key={p.id} className={activeTab === p.id ? "active" : ""} onClick={() => setActiveTab(p.id)}>
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          )}
 
-          {activeTab === "evidence" && (
-            <SidePanel
-              eventId={state.eventId}
-              temporal={state.temporal}
-              candidates={state.candidates}
-              ranking={state.ranking}
-              evidence={state.evidence}
-              evidenceSummary={state.evidenceSummary}
-              selectedMmsi={selectedMmsi}
-              onSelectVessel={setSelectedMmsi}
-            />
-          )}
-          {activeTab === "forecast" && (
-            <ForecastPanel
-              forecast={state.forecast}
-              impact={state.impact}
-              replay={state.replay}
-              selectedHorizon={selectedHorizon}
-              onSelectHorizon={setSelectedHorizon}
-              onRun={(params, options) => void rerunForecast(params, options)}
-              busy={state.status.f8 === "loading"}
-            />
-          )}
-          {activeTab === "graph" && <GraphExplorer graph={state.graph} eventId={state.eventId} selectedMmsi={selectedMmsi} />}
+          {SIDE_PANELS.map((p) => {
+            const isDetached = detachedPanels.has(p.id);
+            if (!isDetached && p.id !== activeTab) return null; // attached but not the visible tab
+            return (
+              <DockableWindow
+                key={p.id}
+                title={p.label}
+                floatingSize={{ width: 420, height: 480 }}
+                detached={isDetached}
+                onToggleDetached={(next) => setPanelDetached(p.id, next)}
+              >
+                {panelContent(p.id)}
+              </DockableWindow>
+            );
+          })}
         </div>
       </main>
     </div>

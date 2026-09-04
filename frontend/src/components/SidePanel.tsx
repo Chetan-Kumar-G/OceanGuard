@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { ApiError, downloadVesselReportPdf } from "../api/client";
+import { usePdfReportDownload } from "../hooks/usePdfReportDownload";
 import type { CandidateVessel, EvidenceRelation, EvidenceSummary, RankingResult, TemporalProgressionResult } from "../api/types";
 
 interface Props {
@@ -27,21 +26,7 @@ export default function SidePanel({
   selectedMmsi,
   onSelectVessel,
 }: Props) {
-  const [downloading, setDownloading] = useState(false);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
-
-  async function onDownloadReport() {
-    if (!eventId) return;
-    setDownloading(true);
-    setDownloadError(null);
-    try {
-      await downloadVesselReportPdf(eventId);
-    } catch (err) {
-      setDownloadError(err instanceof ApiError ? `Could not generate the report (HTTP ${err.status}).` : "Could not reach the server.");
-    } finally {
-      setDownloading(false);
-    }
-  }
+  const { downloading, error: downloadError, download: onDownloadReport } = usePdfReportDownload(eventId);
 
   const latestObserved = temporal?.states.filter((s) => s.state_type === "OBSERVED").at(-1);
   const candidateByMmsi = new Map(candidates.map((c) => [c.mmsi, c]));

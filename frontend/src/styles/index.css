@@ -147,6 +147,19 @@ body {
   min-height: 0;
 }
 
+.map-pane .dock-window.dock-attached {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border: none;
+  border-radius: 0;
+}
+
+.map-pane .dock-attached .dock-body {
+  flex: 1;
+  min-height: 0;
+}
+
 .map-container {
   width: 100%;
   height: 100%;
@@ -757,6 +770,101 @@ body {
 .flag-status-dismissed {
   background: rgba(138, 144, 160, 0.15);
   color: var(--muted);
+}
+
+/* ---------------------------------------------------------------- header PDF button */
+.header-pdf-button {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 10px !important;
+}
+
+.header-pdf-error {
+  margin: 0;
+  padding: 4px 20px;
+  font-size: 11px;
+}
+
+/* ---------------------------------------------------------------- dockable windows */
+.dock-window {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.dock-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.dock-body {
+  padding: 12px;
+}
+
+.dock-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dock-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--muted);
+  font-size: 11px;
+  padding: 2px 7px;
+  cursor: pointer;
+}
+
+.dock-toggle:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.dock-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.dock-floating {
+  position: fixed;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+}
+
+.dock-floating .dock-titlebar {
+  cursor: grab;
+}
+
+.dock-floating .dock-titlebar:active {
+  cursor: grabbing;
+}
+
+.dock-body-floating {
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.map-dock.dock-floating .dock-body-floating {
+  padding: 0;
 }
 
 /* ---------------------------------------------------------------- timeline player */
