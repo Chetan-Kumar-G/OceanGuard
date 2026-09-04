@@ -24,6 +24,26 @@ from shared.schemas.envelope import APIEnvelope, GraphResponse, NodeSchema, Edge
 logger = logging.getLogger(__name__)
 
 
+def _records_with_nan_as_none(df: pd.DataFrame) -> list[dict]:
+    """``df.to_dict(orient="records")`` with every NaN-like scalar replaced by
+    ``None``.
+
+    A DataFrame column that is ``None`` for some/all rows can come back from
+    pandas as float ``NaN`` instead of Python ``None`` - reliably so when read
+    via ``pd.read_sql`` (SQL NULL -> NaN for most column types), and in some
+    pandas versions even for a plain ``pd.DataFrame([{...}, ...])`` build.
+    NodeSchema/EdgeSchema declare ``timestamp`` etc. as ``Optional[str]``,
+    which accepts ``None`` but not a bare float, so an un-sanitized NaN raises
+    a pydantic ValidationError instead of serializing as a missing field.
+    """
+    if df.empty:
+        return []
+    return [
+        {k: (None if pd.isna(v) else v) for k, v in row.items()}
+        for row in df.to_dict(orient="records")
+    ]
+
+
 def _load_upstream(event_id: Optional[str] = None, data_root: Optional[Path] = None) -> dict:
     """
     Load all upstream tables via mock loader.
@@ -104,9 +124,9 @@ def get_graph_response(
         is_partial = False
         logger.info("Serving event=%s from DB cache (%d nodes)", event_id, len(nodes_df))
 
-    # Serialize
-    nodes = [NodeSchema(**row) for row in nodes_df.to_dict(orient="records")] if not nodes_df.empty else []
-    edges = [EdgeSchema(**row) for row in edges_df.to_dict(orient="records")] if not edges_df.empty else []
+    # Serialize (NaN -> None first; see _records_with_nan_as_none)
+    nodes = [NodeSchema(**row) for row in _records_with_nan_as_none(nodes_df)]
+    edges = [EdgeSchema(**row) for row in _records_with_nan_as_none(edges_df)]
 
     graph_resp = GraphResponse(
         event_id=event_id,

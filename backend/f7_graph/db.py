@@ -148,7 +148,9 @@ def upsert_nodes(engine, nodes_df: pd.DataFrame, event_id: str) -> int:
         return 0
     with engine.begin() as conn:
         conn.execute(text("DELETE FROM graph_nodes WHERE event_id = :eid"), {"eid": event_id})
-    rows = nodes_df.to_dict(orient="records")
+    # NaN (e.g. a column that's None for every node so far) isn't a valid value
+    # for the nullable TEXT/TIMESTAMPTZ columns below - use real NULL instead.
+    rows = [{k: (None if pd.isna(v) else v) for k, v in row.items()} for row in nodes_df.to_dict(orient="records")]
     written = 0
     with engine.begin() as conn:
         for row in rows:
@@ -186,7 +188,7 @@ def upsert_edges(engine, edges_df: pd.DataFrame, event_id: str) -> int:
         return 0
     with engine.begin() as conn:
         conn.execute(text("DELETE FROM graph_edges WHERE event_id = :eid"), {"eid": event_id})
-    rows = edges_df.to_dict(orient="records")
+    rows = [{k: (None if pd.isna(v) else v) for k, v in row.items()} for row in edges_df.to_dict(orient="records")]
     written = 0
     with engine.begin() as conn:
         for row in rows:
