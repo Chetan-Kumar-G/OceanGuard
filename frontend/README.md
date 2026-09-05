@@ -1,4 +1,4 @@
-# OilTrace AI — Investigator Dashboard
+# OceanGuard AI — Investigator Dashboard
 
 React + TypeScript + MapLibre GL frontend for the F1–F8 backend (`backend/app.py`).
 Implements **F22 — Investigator Geospatial Dashboard** from

@@ -57,7 +57,7 @@ export default function AppealPage() {
             An investigator will review this and may contact you at <strong>{result.contact_email}</strong>. Submitting a
             dispute does not itself change any status — it starts a human review.
           </p>
-          <Link to="/">Back to OilTrace AI</Link>
+          <Link to="/">Back to OceanGuard AI</Link>
         </div>
       </div>
     );
@@ -68,7 +68,7 @@ export default function AppealPage() {
       <form className="auth-card appeal-card" onSubmit={onSubmit}>
         <h1>Dispute a false positive</h1>
         <p className="muted">
-          No account needed. Use this if you believe OilTrace AI incorrectly detected a spill, estimated a source
+          No account needed. Use this if you believe OceanGuard AI incorrectly detected a spill, estimated a source
           region, or named a vessel as a candidate. Candidate vessels are evidence-based associations for
           investigation, not confirmed legal responsibility — this form starts a human review.
         </p>

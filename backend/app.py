@@ -1,4 +1,4 @@
-"""OilTrace AI — unified FastAPI application.
+"""OceanGuard AI — unified FastAPI application.
 
 Mounts all eight pipeline features behind one app, plus investigator
 authentication and the public false-positive appeals intake:
@@ -44,7 +44,7 @@ from backend.shared.config.settings import settings as f1f2_settings
 from shared.config.settings import get_settings
 
 app = FastAPI(
-    title="OilTrace AI — Unified Investigation API",
+    title="OceanGuard AI — Unified Investigation API",
     version="1.1.0",
     description=(
         "AI-assisted satellite oil-spill investigation and decision-support system: "
@@ -104,7 +104,7 @@ if _dataset_dir.exists():
 def health():
     return {
         "status": "ok",
-        "service": "oiltrace-ai",
+        "service": "oceanguard-ai",
         "features": ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8"],
     }
 
@@ -112,7 +112,7 @@ def health():
 @app.get("/", tags=["Health"])
 def root():
     return {
-        "message": "OilTrace AI — Unified Investigation API",
+        "message": "OceanGuard AI — Unified Investigation API",
         "docs": "/docs",
         "health": "/health",
         "auth": ["POST /auth/register", "POST /auth/login", "GET /auth/me"],

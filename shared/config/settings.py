@@ -23,7 +23,7 @@ class Settings(BaseSettings):
 
     @property
     def SYNTHETIC_ROOT(self) -> Path:
-        """Parent of the generated dataset (holds ``outputs/`` and ``oiltrace_synth/``)."""
+        """Parent of the generated dataset (holds ``outputs/`` and ``oceanguard_synth/``)."""
         return self.DATA_DIR / "raw" / "synthetic"
 
     @property
@@ -121,7 +121,7 @@ class Settings(BaseSettings):
 
     # API settings
     API_V1_PREFIX: str = "/api/v1"
-    APP_NAME: str = "OceanGuard OilTrace AI"
+    APP_NAME: str = "OceanGuard AI"
     DEBUG: bool = False
 
     def load_config_yaml(self) -> Dict[str, Any]:

@@ -13,7 +13,7 @@ from backend.shared.config.settings import settings
 app = FastAPI(
     title=settings.api_title,
     version=settings.api_version,
-    description="OilTrace AI Backend Service — F1: Detection | F2: Temporal Reconstruction",
+    description="OceanGuard AI Backend Service — F1: Detection | F2: Temporal Reconstruction",
 )
 
 app.add_middleware(
@@ -35,4 +35,4 @@ app.include_router(f2_router)
 
 @app.get("/health")
 def healthcheck():
-    return {"status": "ok", "service": "oiltrace-f1-f2", "version": settings.api_version}
+    return {"status": "ok", "service": "oceanguard-f1-f2", "version": settings.api_version}

@@ -1,0 +1,75 @@
+1
+00:00:00,050 --> 00:00:13,924
+OceanGuard AI is a maritime forensic investigation platform. Given a satellite detected oil spill, it reconstructs where and when it likely started, traces its drift, ranks candidate vessels, and forecasts where it is headed next.
+
+2
+00:00:14,224 --> 00:00:21,991
+Every investigation happens behind an investigator account. The very first account ever registered on a deployment automatically becomes an admin.
+
+3
+00:00:22,291 --> 00:00:28,953
+This is the investigator dashboard, one screen driving all eight stages of the pipeline, from detection through to forecasting.
+
+4
+00:00:29,253 --> 00:00:43,015
+Selecting a spill event runs the full pipeline live: temporal reconstruction, backward hindcasting, A I S correlation, consistency checks, ranking, the evidence graph, and forecasting, each shown independently as it completes.
+
+5
+00:00:43,315 --> 00:00:52,908
+Moments later the investigation is fully reconstructed. The detected spill polygon, its estimated source region, and candidate vessels are all plotted together on the map.
+
+6
+00:00:53,208 --> 00:01:02,249
+The timeline player replays each satellite pass. This is the F1 detection mask overlaid directly on the radar image, with area and confidence for every observation.
+
+7
+00:01:02,549 --> 00:01:09,619
+The evidence panel summarizes the spill and ranks candidate vessels, an evidence fusion score sits behind every name on this list.
+
+8
+00:01:09,919 --> 00:01:16,227
+Selecting a ranked vessel highlights its position on the map, connecting the evidence directly to a specific ship.
+
+9
+00:01:16,527 --> 00:01:22,753
+The forward forecast panel projects where the slick is headed next, along with impact area and beaching risk.
+
+10
+00:01:23,053 --> 00:01:31,968
+Investigators are not stuck with the defaults. Horizons, ensemble size, particle count, and seed are all adjustable, and the forecaster can be rerun on demand.
+
+11
+00:01:32,268 --> 00:01:42,000
+The forensic evidence graph makes the whole chain explainable, dozens of nodes and edges connecting detections, hypotheses, vessels, and forecasts into one auditable trail.
+
+12
+00:01:42,300 --> 00:01:48,122
+Signing out returns to this same investigator login. The entire dashboard sits behind authentication.
+
+13
+00:01:48,422 --> 00:01:55,511
+But not everything requires an account. Anyone named as a candidate can dispute a finding directly, with no login required.
+
+14
+00:01:55,811 --> 00:02:02,675
+Here, a contacted vessel operator disputes being named as a source, with a statement and contact details for follow up.
+
+15
+00:02:02,975 --> 00:02:08,487
+The dispute is logged immediately with a reference ID and routed straight into the investigator review queue.
+
+16
+00:02:08,787 --> 00:02:13,745
+Back as an investigator, the review queue lists every dispute, filterable by status.
+
+17
+00:02:14,045 --> 00:02:18,728
+Expanding a case shows the full statement alongside its complete status history.
+
+18
+00:02:19,028 --> 00:02:26,421
+Recording a decision appends to that history instead of replacing it, a durable and auditable trail from first submission to final call.
+
+19
+00:02:26,721 --> 00:02:33,505
+Eight A I pipeline stages, one investigator dashboard, from first detection to final decision. That is OceanGuard AI.

@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { getMe, login as apiLogin, register as apiRegister, setAuthToken } from "../api/client";
 import type { UserOut } from "../api/types";
 
-const STORAGE_KEY = "oiltrace_token";
+const STORAGE_KEY = "oceanguard_token";
 
 interface AuthContextValue {
   user: UserOut | null;

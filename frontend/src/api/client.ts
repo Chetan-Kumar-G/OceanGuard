@@ -173,7 +173,7 @@ export async function downloadVesselReportPdf(eventId: string): Promise<void> {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `oiltrace-${eventId}-vessel-report.pdf`;
+  a.download = `oceanguard-${eventId}-vessel-report.pdf`;
   document.body.appendChild(a);
   a.click();
   a.remove();

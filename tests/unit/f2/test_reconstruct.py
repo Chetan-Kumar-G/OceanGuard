@@ -241,7 +241,7 @@ class TestProvenanceChaining:
         """
         When INTERPOLATED states are inserted between OBSERVED states,
         the second OBSERVED state must point to the first OBSERVED state
-        (OilTrace Blueprint #10), NOT to an INTERPOLATED state.
+        (OceanGuard Blueprint #10), NOT to an INTERPOLATED state.
         """
         detections = [
             _make_detection("EVT9017", 0, 0.0),

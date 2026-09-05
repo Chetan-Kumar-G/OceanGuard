@@ -355,7 +355,7 @@ def generate_d1(cfg: Config, rng: RNG, env: Environment, frame: Frame,
                 ground_truth_source="simulation",
                 label_confidence=round(float(np.clip(0.75 + 0.2 * contrast + g.normal(0, 0.04), 0.5, 0.99)), 3),
                 data_quality_flag="nominal" if 2.5 <= wind <= 12.5 else "low_contrast",
-                source_dataset="OilTrace-Synth",
+                source_dataset="OceanGuard-Synth",
                 license="CC-BY-4.0 (synthetic)",
                 split=ev.split,
             ))

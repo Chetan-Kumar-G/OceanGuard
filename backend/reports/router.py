@@ -26,5 +26,5 @@ def get_vessel_report(event_id: str, current: UserOut = Depends(get_current_user
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="oiltrace-{event_id}-vessel-report.pdf"'},
+        headers={"Content-Disposition": f'attachment; filename="oceanguard-{event_id}-vessel-report.pdf"'},
     )

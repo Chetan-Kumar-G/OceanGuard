@@ -26,7 +26,7 @@ def client(tmp_path):
 def token(client):
     r = client.post(
         "/auth/register",
-        json={"email": "investigator@oiltrace.example", "password": "supersecret1", "display_name": "Inv"},
+        json={"email": "investigator@oceanguard.example", "password": "supersecret1", "display_name": "Inv"},
     )
     return r.json()["access_token"]
 
@@ -39,5 +39,5 @@ def test_report_returns_a_pdf(client, token):
     r = client.get("/api/v1/reports/EVT0002/vessels.pdf", headers={"Authorization": f"Bearer {token}"})
     assert r.status_code == 200
     assert r.headers["content-type"] == "application/pdf"
-    assert "oiltrace-EVT0002-vessel-report.pdf" in r.headers["content-disposition"]
+    assert "oceanguard-EVT0002-vessel-report.pdf" in r.headers["content-disposition"]
     assert r.content.startswith(b"%PDF-")

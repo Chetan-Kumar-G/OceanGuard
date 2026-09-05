@@ -20,7 +20,7 @@ from .config import EvidenceThresholds, default_thresholds
 from .engine import evaluate
 from .models import EvidenceRelation, EvidenceRelationRecord, RelationKind
 
-logger = logging.getLogger("oiltrace.f5")
+logger = logging.getLogger("oceanguard.f5")
 
 Loader = Callable[[str, Optional[str]], dict[str, Any]]
 

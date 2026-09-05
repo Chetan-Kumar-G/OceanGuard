@@ -33,7 +33,7 @@ coverage/
 .pytest_cache/
 .coverage
 
-# OilTrace backend runtime artifacts
+# OceanGuard backend runtime artifacts
 *.sqlite
 *.sqlite3
 

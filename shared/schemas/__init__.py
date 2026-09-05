@@ -1,4 +1,4 @@
-"""Shared schemas for OilTrace data contracts."""
+"""Shared schemas for OceanGuard data contracts."""
 from .envelope import (
     APIEnvelope,
     APIResponse,

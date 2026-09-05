@@ -23,7 +23,7 @@ from backend.shared.schemas.envelope import ApiResponse, ApiError, ResponseMeta
 from backend.shared.schemas.temporal import TemporalSpillState, TemporalProgressionResult
 from backend.f2_temporal.reconstruct import reconstruct_event
 
-logger = logging.getLogger("oiltrace.f2")
+logger = logging.getLogger("oceanguard.f2")
 
 router = APIRouter(tags=["F2 — Temporal Reconstruction"])
 

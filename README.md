@@ -1,8 +1,8 @@
-# OilTrace AI 🛢️🛰️
+# OceanGuard AI 🛢️🛰️
 
 **Maritime Spill Intelligence Platform** — SIH26143 (NTRO)
 
-OilTrace AI turns a satellite-detected oil spill into a maritime forensic investigation by reconstructing where and when it likely originated, tracing its movement, analysing historical vessel traffic, and ranking potential source vessels using explainable spatio-temporal evidence.
+OceanGuard AI turns a satellite-detected oil spill into a maritime forensic investigation by reconstructing where and when it likely originated, tracing its movement, analysing historical vessel traffic, and ranking potential source vessels using explainable spatio-temporal evidence.
 
 ---
 
@@ -10,7 +10,7 @@ OilTrace AI turns a satellite-detected oil spill into a maritime forensic invest
 
 Satellite imagery can confirm an oil spill *exists* — it can't say who caused it or where it's heading next. Oceanographic drift data, historical AIS vessel traffic, and spill imagery currently live in separate systems, costing authorities critical response time during manual reconciliation.
 
-**OilTrace AI** connects these sources end-to-end:
+**OceanGuard AI** connects these sources end-to-end:
 
 > Satellite → detect spill → trace backward → estimate origin → reconstruct ships → score candidate vessels → predict future movement → visualize evidence
 
@@ -31,7 +31,7 @@ Given a satellite SAR image showing a possible oil spill, detect and localize it
 ## 🏗️ Pipeline
 
 The system implements all eight features of the
-[OilTrace AI Technical Research Specification](OilTrace_Technical_Research_Specification_CleanLayout.pdf)
+[OceanGuard AI Technical Research Specification](OceanGuard_Technical_Research_Specification_CleanLayout.pdf)
 behind **one unified FastAPI app** (`backend/app.py`):
 
 | # | Feature | Module | Status |
@@ -49,7 +49,7 @@ F3 and F8 share one Lagrangian particle-tracking engine (`shared/physics/lagrang
 **backward** (hindcast) and **forward** (forecast) respectively.
 
 > **F8 honesty note:** F8 drives its forward ensemble with F3's synthetic forcing
-> *abstraction*, not the internal field used by the `oiltrace_synth` dataset generator
+> *abstraction*, not the internal field used by the `oceanguard_synth` dataset generator
 > (a separately-seeded implementation of the same kind of field). It reproduces the
 > D8 data **contract** exactly and behaves correctly (spread grows with lead time,
 > confidence decays, the envelope is scenario-based, replay never sees the future) —

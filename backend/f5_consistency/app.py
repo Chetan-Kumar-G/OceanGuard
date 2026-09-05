@@ -16,7 +16,7 @@ from .router import http_exception_handler, router
 def create_app() -> FastAPI:
     logging.basicConfig(level=logging.INFO)
     app = FastAPI(
-        title="OilTrace F5 — Cross-Source Consistency & Evidence Conflict Detection",
+        title="OceanGuard F5 — Cross-Source Consistency & Evidence Conflict Detection",
         version="0.1.0",
     )
     app.include_router(router)

@@ -1,1 +1,1 @@
-"""OilTrace Shared Foundation Package."""
+"""OceanGuard Shared Foundation Package."""

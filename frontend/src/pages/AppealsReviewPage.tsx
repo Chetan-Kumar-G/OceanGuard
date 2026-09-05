@@ -41,7 +41,7 @@ export default function AppealsReviewPage() {
         <div className="brand">
           <span className="brand-icon">🛢️</span>
           <div>
-            <h1>OilTrace AI</h1>
+            <h1>OceanGuard AI</h1>
             <p className="tagline">Appeals review queue</p>
           </div>
         </div>

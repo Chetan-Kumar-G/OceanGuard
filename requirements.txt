@@ -1,4 +1,4 @@
-# OilTrace AI — merged requirements for the unified backend (F1–F8).
+# OceanGuard AI — merged requirements for the unified backend (F1–F8).
 # Install: pip install -r requirements.txt
 
 # --- API / web ---

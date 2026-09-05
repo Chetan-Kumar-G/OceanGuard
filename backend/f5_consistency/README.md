@@ -131,7 +131,7 @@ relations = evaluate_consistency("EVT0002")    # uses /shared/mocks for any upst
   `source_hypotheses`, `vessel_tracks` — here via `/shared/mocks/load_mock.py`.
 * **Writes:** `evidence_relations` (one row per compared pair) and
   `evidence_items` (one row per distinct evidence endpoint, for F7's graph).
-  Default store is a local SQLite file (`OILTRACE_DB_URL` to point at shared
+  Default store is a local SQLite file (`OCEANGUARD_DB_URL` to point at shared
   Postgres — F5 has no geometry columns so PostGIS is not required).
 
 ## Scope

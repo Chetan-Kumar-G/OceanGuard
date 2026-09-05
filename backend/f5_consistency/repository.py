@@ -5,7 +5,7 @@ Writes ``evidence_relations`` (one row per compared pair) and ``evidence_items``
 upstream tables only through the mock loader / live services — never here.
 
 Default store is a local SQLite file so ``DB write works`` is demoable without
-Postgres/PostGIS (F5 has no geometry columns). Point ``OILTRACE_DB_URL`` at the
+Postgres/PostGIS (F5 has no geometry columns). Point ``OCEANGUARD_DB_URL`` at the
 shared Postgres instance in integration.
 """
 from __future__ import annotations
@@ -30,7 +30,7 @@ from sqlalchemy.engine import Engine
 
 from .models import EvidenceRelation, EvidenceRelationRecord, RelationKind
 
-_DEFAULT_URL = "sqlite:///" + os.path.abspath("oiltrace_f5.sqlite")
+_DEFAULT_URL = "sqlite:///" + os.path.abspath("oceanguard_f5.sqlite")
 
 _metadata = MetaData()
 
@@ -72,7 +72,7 @@ evidence_items = Table(
 class EvidenceRepository:
     def __init__(self, url: Optional[str] = None, *, engine: Optional[Engine] = None) -> None:
         self.engine = engine or create_engine(
-            url or os.environ.get("OILTRACE_DB_URL") or _DEFAULT_URL,
+            url or os.environ.get("OCEANGUARD_DB_URL") or _DEFAULT_URL,
             future=True,
         )
         _metadata.create_all(self.engine)

@@ -130,7 +130,7 @@ export default function DashboardPage() {
         <div className="brand">
           <span className="brand-icon">🛢️</span>
           <div>
-            <h1>OilTrace AI</h1>
+            <h1>OceanGuard AI</h1>
             <p className="tagline">Investigator dashboard — F1–F8</p>
           </div>
         </div>

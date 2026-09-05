@@ -3,7 +3,7 @@
 Distances from the predicted slick to the modelled coast edge and to named
 sensitive / protected zones, plus a coarse beaching-risk flag. Geometry comes
 from the ``geography`` block of the synthetic ``config.used.yaml`` (ported from
-``oiltrace_synth/d8_replay.py``).
+``oceanguard_synth/d8_replay.py``).
 """
 from __future__ import annotations
 

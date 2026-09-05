@@ -1,4 +1,4 @@
-# OilTrace synthetic data generator - master configuration.
+# OceanGuard synthetic data generator - master configuration.
 # Every number that shapes the output lives here. Change the seed to get a new,
 # fully reproducible world; change n_events to scale it.
 

@@ -28,7 +28,7 @@ from backend.f2_temporal.geometry import (
     _haversine_km,
 )
 
-logger = logging.getLogger("oiltrace.f2")
+logger = logging.getLogger("oceanguard.f2")
 
 # Default gap-fill config (hours)
 _INTERP_INTERVAL_H: float = 24.0   # one synthetic state per 24-h gap

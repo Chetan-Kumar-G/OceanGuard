@@ -1,7 +1,7 @@
 # Feature F1: AI Oil-Spill Detection & Look-Alike Analysis
 
 ## Overview
-Feature F1 is the foundation of the OilTrace AI maritime pipeline. It turns raw Synthetic Aperture Radar (SAR, optionally +optical) scenes into georeferenced, confidence-scored oil-spill polygons alongside look-alike risk flags and data quality flags.
+Feature F1 is the foundation of the OceanGuard AI maritime pipeline. It turns raw Synthetic Aperture Radar (SAR, optionally +optical) scenes into georeferenced, confidence-scored oil-spill polygons alongside look-alike risk flags and data quality flags.
 
 - **Developer**: Developer 1 (F1 Lead)
 - **Model**: Standard U-Net Baseline (1-channel input, 5-class segmentation: sea, oil, look-alike, ship, land)

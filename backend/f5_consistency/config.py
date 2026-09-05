@@ -62,11 +62,11 @@ def _load_raw(path: Path) -> dict[str, Any]:
 
 
 def load_thresholds(path: str | os.PathLike[str] | None = None) -> EvidenceThresholds:
-    """Load thresholds from YAML. ``OILTRACE_EVIDENCE_THRESHOLDS`` env var overrides
+    """Load thresholds from YAML. ``OCEANGUARD_EVIDENCE_THRESHOLDS`` env var overrides
     the default path; an explicit ``path`` argument overrides both."""
     resolved = Path(
         path
-        or os.environ.get("OILTRACE_EVIDENCE_THRESHOLDS")
+        or os.environ.get("OCEANGUARD_EVIDENCE_THRESHOLDS")
         or _DEFAULT_PATH
     )
     ev = _load_raw(resolved)

@@ -17,12 +17,12 @@ _ALGORITHM = "HS256"
 
 # Insecure but functional default so the app runs out of the box; ALWAYS
 # override with a real secret (env var) before any non-local deployment.
-_DEFAULT_SECRET = "oiltrace-dev-secret-change-me-before-any-real-deployment"
+_DEFAULT_SECRET = "oceanguard-dev-secret-change-me-before-any-real-deployment"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 
 
 def _secret_key() -> str:
-    return os.environ.get("OILTRACE_JWT_SECRET", _DEFAULT_SECRET)
+    return os.environ.get("OCEANGUARD_JWT_SECRET", _DEFAULT_SECRET)
 
 
 def hash_password(password: str) -> str:

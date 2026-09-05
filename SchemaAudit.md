@@ -1,4 +1,4 @@
-# OilTrace AI — SIH Evaluation & Marking Schema
+# OceanGuard AI — SIH Evaluation & Marking Schema
 
 ## Total Score: 50 Marks
 
@@ -20,7 +20,7 @@ The project is evaluated across five official judging categories:
 
 ## What Judges Are Expected to Evaluate
 
-The novelty score should primarily evaluate whether OilTrace AI provides a meaningful improvement over conventional oil-spill detection and existing maritime-intelligence workflows.
+The novelty score should primarily evaluate whether OceanGuard AI provides a meaningful improvement over conventional oil-spill detection and existing maritime-intelligence workflows.
 
 ### Scoring Breakdown
 
@@ -50,7 +50,7 @@ These are established technologies.
 
 ### Our System-Level Innovation
 
-OilTrace AI combines these technologies into a spill-centric investigation workflow:
+OceanGuard AI combines these technologies into a spill-centric investigation workflow:
 
 Satellite Observation
 ↓
@@ -82,7 +82,7 @@ The project should be presented as:
 
 ### Maximum Novelty Claim We Should Make
 
-> OilTrace AI introduces a hypothesis-driven, evidence-aware workflow for oil-spill investigation that preserves competing explanations, explicitly represents contradictory and missing evidence, and updates candidate assessments as new observations become available.
+> OceanGuard AI introduces a hypothesis-driven, evidence-aware workflow for oil-spill investigation that preserves competing explanations, explicitly represents contradictory and missing evidence, and updates candidate assessments as new observations become available.
 
 ### Claims We Must Avoid
 
@@ -615,7 +615,7 @@ Show the fragmentation.
 
 ## Slide 3 — Solution
 
-Show the complete OilTrace AI pipeline.
+Show the complete OceanGuard AI pipeline.
 
 ---
 
@@ -937,4 +937,4 @@ is stronger than a project claiming:
 
 # 21. Final One-Line Evaluation Position
 
-> **OilTrace AI is not trying to replace maritime investigators; it turns fragmented satellite, environmental and vessel data into an explainable, uncertainty-aware investigation workflow that helps them decide what evidence to investigate next.**
+> **OceanGuard AI is not trying to replace maritime investigators; it turns fragmented satellite, environmental and vessel data into an explainable, uncertainty-aware investigation workflow that helps them decide what evidence to investigate next.**

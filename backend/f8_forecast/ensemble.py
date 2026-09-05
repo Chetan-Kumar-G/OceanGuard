@@ -5,7 +5,7 @@ Seeds particles inside the latest confirmed slick polygon and integrates them
 factor, diffusion, forcing noise) and forcing noise that grows with lead time
 give a spreading cloud whose footprint is the forecast envelope.
 
-Ported in spirit from ``data/raw/synthetic/oiltrace_synth/d8_replay.py`` but
+Ported in spirit from ``data/raw/synthetic/oceanguard_synth/d8_replay.py`` but
 running in epoch-hours on the shared physics engine + F3 forcing field.
 """
 from __future__ import annotations

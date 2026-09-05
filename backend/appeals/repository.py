@@ -9,7 +9,7 @@ from typing import Optional
 from sqlalchemy import Boolean, Column, MetaData, String, Table, Text, create_engine, insert, select, update
 from sqlalchemy.engine import Engine
 
-_DEFAULT_URL = "sqlite:///" + os.path.abspath("oiltrace_appeals.sqlite")
+_DEFAULT_URL = "sqlite:///" + os.path.abspath("oceanguard_appeals.sqlite")
 _metadata = MetaData()
 
 appeals = Table(
@@ -44,7 +44,7 @@ def _now_iso() -> str:
 
 class AppealsRepository:
     def __init__(self, url: Optional[str] = None, *, engine: Optional[Engine] = None) -> None:
-        self.engine = engine or create_engine(url or os.environ.get("OILTRACE_APPEALS_DB_URL") or _DEFAULT_URL, future=True)
+        self.engine = engine or create_engine(url or os.environ.get("OCEANGUARD_APPEALS_DB_URL") or _DEFAULT_URL, future=True)
         _metadata.create_all(self.engine)
 
     def dispose(self) -> None:

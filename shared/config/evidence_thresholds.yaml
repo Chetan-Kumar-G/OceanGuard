@@ -1,4 +1,4 @@
-# OilTrace — F5 Cross-Source Consistency: single source of truth for the
+# OceanGuard — F5 Cross-Source Consistency: single source of truth for the
 # rule/constraint engine thresholds.
 #
 # The MVP verdict rule (see /backend/f5_consistency/README.md for the full ADR):

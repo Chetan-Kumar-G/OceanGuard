@@ -104,13 +104,13 @@ def get_engine(dsn: Optional[str] = None):
     Return a SQLAlchemy engine.
     DSN resolution order:
       1. dsn argument
-      2. OILTRACE_DB_DSN environment variable
+      2. OCEANGUARD_DB_DSN environment variable
       3. None → mock mode
     """
     if not _SA_AVAILABLE:
         return None
 
-    resolved = dsn or os.environ.get("OILTRACE_DB_DSN")
+    resolved = dsn or os.environ.get("OCEANGUARD_DB_DSN")
     if not resolved:
         logger.info("No DB DSN configured — running in mock/no-op mode")
         return None

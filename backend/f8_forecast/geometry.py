@@ -33,7 +33,7 @@ def cloud_to_polygon_km(points_km: np.ndarray, buffer_km: float, *, keep_largest
     """Turn an (N, 2) km particle cloud into a slick footprint polygon (km frame).
 
     Morphological *close* (dilate then partially erode) so nearby particles merge
-    into a smooth blob - matching ``oiltrace_synth.geo.points_to_slick``. With
+    into a smooth blob - matching ``oceanguard_synth.geo.points_to_slick``. With
     ``keep_largest`` (the default, used for the predicted slick) diffuse outliers
     fragment off and only the dense core remains; pass ``keep_largest=False`` for
     the forecast *envelope*, where every ensemble patch counts.

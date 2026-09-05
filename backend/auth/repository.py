@@ -1,7 +1,7 @@
 """Persistence for users and password-reset tokens.
 
 Default store is a local SQLite file (no Postgres required for the demo).
-Point ``OILTRACE_AUTH_DB_URL`` at a shared database for a real deployment.
+Point ``OCEANGUARD_AUTH_DB_URL`` at a shared database for a real deployment.
 """
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.engine import Engine
 
-_DEFAULT_URL = "sqlite:///" + os.path.abspath("oiltrace_auth.sqlite")
+_DEFAULT_URL = "sqlite:///" + os.path.abspath("oceanguard_auth.sqlite")
 _RESET_TOKEN_TTL_MINUTES = 30
 
 _metadata = MetaData()
@@ -69,7 +69,7 @@ class UserRecord:
 
 class AuthRepository:
     def __init__(self, url: Optional[str] = None, *, engine: Optional[Engine] = None) -> None:
-        self.engine = engine or create_engine(url or os.environ.get("OILTRACE_AUTH_DB_URL") or _DEFAULT_URL, future=True)
+        self.engine = engine or create_engine(url or os.environ.get("OCEANGUARD_AUTH_DB_URL") or _DEFAULT_URL, future=True)
         _metadata.create_all(self.engine)
 
     def dispose(self) -> None:

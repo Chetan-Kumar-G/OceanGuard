@@ -92,7 +92,7 @@ class SyntheticForcingProvider(ForcingProvider):
         self.ref_lon = float(self._aoi["ref_lon"])
         self.km_per_deg_lon = _KM_PER_DEG_LAT * math.cos(math.radians(self.ref_lat))
 
-        # Build synthetic vector fields matching oiltrace_synth reference
+        # Build synthetic vector fields matching oceanguard_synth reference
         seed = int(cfg_dict.get("seed", 20260902))
         wcfg = cfg_dict["environment"]["wind"]
         ccfg = cfg_dict["environment"]["current"]

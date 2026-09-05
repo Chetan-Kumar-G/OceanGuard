@@ -18,7 +18,7 @@ from shared.schemas.envelope import ApiMeta, ApiResponse, error_response
 from .repository import EvidenceRepository
 from .service import evaluate_event
 
-logger = logging.getLogger("oiltrace.f5")
+logger = logging.getLogger("oceanguard.f5")
 
 router = APIRouter(tags=["f5-consistency"])
 

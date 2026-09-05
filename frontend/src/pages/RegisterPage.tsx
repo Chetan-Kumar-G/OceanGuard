@@ -31,7 +31,7 @@ export default function RegisterPage() {
   return (
     <div className="auth-page">
       <form className="auth-card" onSubmit={onSubmit}>
-        <h1>🛢️ OilTrace AI</h1>
+        <h1>🛢️ OceanGuard AI</h1>
         <p className="muted">
           Create an investigator account. The very first account registered on a fresh deployment becomes an admin.
         </p>

@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     f1_lookalike_threshold: float = 0.35
     
     # API Settings
-    api_title: str = "OilTrace AI Detection API"
+    api_title: str = "OceanGuard AI Detection API"
     api_version: str = "1.0.0"
     api_prefix: str = "/api/v1"
 

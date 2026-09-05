@@ -40,7 +40,7 @@ def _get_engine():
 
 
 def _data_root() -> Path | None:
-    env = os.environ.get("OILTRACE_DATA_DIR")
+    env = os.environ.get("OCEANGUARD_DATA_DIR")
     return Path(env) if env else None
 
 

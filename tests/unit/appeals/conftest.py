@@ -36,5 +36,5 @@ def client(auth_repo, appeals_repo):
 
 @pytest.fixture()
 def investigator_token(client):
-    r = client.post("/auth/register", json={"email": "investigator@oiltrace.example", "password": "supersecret1", "display_name": "Inv"})
+    r = client.post("/auth/register", json={"email": "investigator@oceanguard.example", "password": "supersecret1", "display_name": "Inv"})
     return r.json()["access_token"]
