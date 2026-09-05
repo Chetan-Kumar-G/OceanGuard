@@ -1,0 +1,25 @@
+# Render Blueprint for the OceanGuard backend.
+# Deploy: push this repo to GitHub, then in Render "New +" -> "Blueprint" ->
+# point it at the repo. Render reads this file and builds the Dockerfile at
+# the repo root automatically.
+#
+# NOTE on persistence: the free plan's filesystem is ephemeral, so the three
+# *.sqlite files (auth/appeals/f5) reset on every redeploy or restart — fine
+# for a demo, not for data you need to keep. To persist them, upgrade the
+# service and uncomment the `disk:` block below (mounts a real volume at
+# /app/data-persist; you'd then point the sqlite paths there via env vars).
+services:
+  - type: web
+    name: oceanguard-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+    # disk:
+    #   name: oceanguard-data
+    #   mountPath: /app/data-persist
+    #   sizeGB: 1

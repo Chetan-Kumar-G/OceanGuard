@@ -1,0 +1,32 @@
+# Frontend is deployed separately (Vercel/Netlify), not part of the backend image.
+frontend/
+
+# Unused reference imagery — see Dockerfile comment. This alone is ~4.8GB.
+data/raw/sih_satellite/
+
+# VCS / editor / tooling noise
+.git/
+.claude/
+.vscode/
+.idea/
+.pytest_cache/
+
+# Local runtime state — never bake a database into the image
+*.sqlite
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Docs / non-runtime assets not needed inside the container
+docs/
+Claude outputs/
+*.pdf
+Features.md
+SchemaAudit.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+SECURITY.md
+tests/
